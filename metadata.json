@@ -1,1 +1,94 @@
-[]
+{
+    "Lalah.txt": {
+        "uploaded_at": "2026-03-10 00:00:00",
+        "size": 4888
+    },
+    "PenjagaYangTidakPernahTidur.txt": {
+        "uploaded_at": "2026-03-10 00:01:00",
+        "size": 1828
+    },
+    "PerpustakaanYangTidakPernahMembakarBuku.txt": {
+        "uploaded_at": "2026-03-10 00:02:00",
+        "size": 1605
+    },
+    "TempatDiManaWaktuTidakBergerak.txt": {
+        "uploaded_at": "2026-03-10 00:03:00",
+        "size": 1572
+    },
+    "animation.html": {
+        "uploaded_at": "2026-03-10 00:04:00",
+        "size": 2978
+    },
+    "bahlil.html": {
+        "uploaded_at": "2026-03-10 00:05:00",
+        "size": 1074
+    },
+    "clicker.html": {
+        "uploaded_at": "2026-03-10 00:06:00",
+        "size": 3620
+    },
+    "girl.html": {
+        "uploaded_at": "2026-03-10 00:07:00",
+        "size": 519
+    },
+    "heck.html": {
+        "uploaded_at": "2026-03-10 00:08:00",
+        "size": 4828
+    },
+    "heckweb.html": {
+        "uploaded_at": "2026-03-10 00:09:00",
+        "size": 3109
+    },
+    "kintol.html": {
+        "uploaded_at": "2026-03-10 00:10:00",
+        "size": 878
+    },
+    "landing_secure.html": {
+        "uploaded_at": "2026-03-10 00:11:00",
+        "size": 583
+    },
+    "landing_secure_1.html": {
+        "uploaded_at": "2026-03-10 00:12:00",
+        "size": 714
+    },
+    "mika_bucin.html": {
+        "uploaded_at": "2026-03-10 00:13:00",
+        "size": 8724
+    },
+    "mikashop.html": {
+        "uploaded_at": "2026-03-10 00:14:00",
+        "size": 6719
+    },
+    "pandu.html": {
+        "uploaded_at": "2026-03-10 00:15:00",
+        "size": 2078
+    },
+    "rpp.html": {
+        "uploaded_at": "2026-03-10 00:16:00",
+        "size": 2051
+    },
+    "snake.html": {
+        "uploaded_at": "2026-03-10 00:17:00",
+        "size": 19621
+    },
+    "standartiktok.txt": {
+        "uploaded_at": "2026-03-10 00:18:00",
+        "size": 2467
+    },
+    "tikus_berdasi.txt": {
+        "uploaded_at": "2026-03-10 00:19:00",
+        "size": 3060
+    },
+    "ukhty.html": {
+        "uploaded_at": "2026-03-10 00:20:00",
+        "size": 585
+    },
+    "ukhty_1.html": {
+        "uploaded_at": "2026-03-10 00:21:00",
+        "size": 584
+    },
+    "worldwar1.txt": {
+        "uploaded_at": "2026-03-10 00:22:00",
+        "size": 11693
+    }
+}
