@@ -1,0 +1,480 @@
+<!-- uploader by Laskar ID -->
+
+<!-- uploader by Laskar ID -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .display-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .calc-button {
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .calc-button:active {
+            transform: scale(0.95);
+        }
+
+        .operator {
+            background-color: #f59e0b;
+            color: white;
+        }
+        
+        .operator:hover {
+            background-color: #d97706;
+        }
+
+        .function-btn {
+            background-color: #27272a;
+            color: #a1a1aa;
+        }
+        
+        .history-item {
+            transition: all 0.2s ease;
+        }
+        
+        .history-item:hover {
+            background-color: #27272a;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden border border-zinc-800">
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4 flex items-center justify-between bg-zinc-950">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-orange-500 rounded-2xl flex items-center justify-center text-2xl font-bold">K</div>
+                <div>
+                    <h1 class="text-3xl font-semibold tracking-tighter display-font">Kalkulator</h1>
+                    <p class="text-xs text-zinc-500 -mt-1">Profesional • Ilmiah • Lengkap</p>
+                </div>
+            </div>
+            <div onclick="clearHistory()" 
+                 class="text-xs px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl cursor-pointer flex items-center gap-2">
+                <span class="text-orange-400">🗑</span>
+                <span>Riwayat</span>
+            </div>
+        </div>
+
+        <!-- Display -->
+        <div class="px-8 pt-2 pb-6 bg-zinc-950">
+            <div class="relative">
+                <input id="display" 
+                       type="text" 
+                       readonly 
+                       class="display-font w-full bg-zinc-950 text-right text-5xl font-semibold tracking-tighter py-8 px-6 rounded-3xl border border-zinc-800 focus:outline-none shadow-inner"
+                       value="0">
+                <!-- Mode indicator -->
+                <div id="mode-indicator"
+                     class="absolute top-6 left-8 text-xs font-medium px-3 py-1 bg-zinc-800 text-orange-400 rounded-2xl flex items-center gap-1 cursor-pointer"
+                     onclick="toggleMode()">
+                    <span id="mode-text">RAD</span>
+                    <span class="text-[10px] text-zinc-500">▼</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="px-8 pb-8 bg-zinc-900">
+            <div id="buttons" class="grid grid-cols-5 gap-3 text-xl"></div>
+        </div>
+
+        <!-- History -->
+        <div class="px-8 pb-8 bg-zinc-900 border-t border-zinc-800">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-sm font-medium text-zinc-400">Riwayat Terbaru</p>
+                <button onclick="clearHistory()" 
+                        class="text-xs text-zinc-500 hover:text-zinc-300">Hapus Semua</button>
+            </div>
+            <div id="history" class="max-h-48 overflow-y-auto text-sm space-y-2 pr-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script already loaded via CDN
+        function initializeTailwind() {
+            // No need, Tailwind CDN handles it
+        }
+
+        // Variables
+        let expression = "0";
+        let memory = 0;
+        let isDeg = false;           // false = radians, true = degrees
+        let hasResult = false;
+        let history = [];
+        
+        const display = document.getElementById("display");
+        const historyContainer = document.getElementById("history");
+        const modeText = document.getElementById("mode-text");
+
+        // Button definitions
+        const buttonConfig = [
+            { label: "MC", action: "mc", colSpan: 1, class: "text-amber-400 text-lg" },
+            { label: "MR", action: "mr", colSpan: 1, class: "text-amber-400 text-lg" },
+            { label: "M+", action: "mplus", colSpan: 1, class: "text-amber-400 text-lg" },
+            { label: "M-", action: "mminus", colSpan: 1, class: "text-amber-400 text-lg" },
+            { label: "AC", action: "clear", colSpan: 1, class: "text-red-400 text-lg" },
+
+            { label: "sin", action: "append", value: "sin(", class: "function-btn text-base" },
+            { label: "cos", action: "append", value: "cos(", class: "function-btn text-base" },
+            { label: "tan", action: "append", value: "tan(", class: "function-btn text-base" },
+            { label: "√", action: "append", value: "√(", class: "function-btn text-2xl" },
+            { label: "log", action: "append", value: "log(", class: "function-btn text-base" },
+
+            { label: "asin", action: "append", value: "asin(", class: "function-btn text-base" },
+            { label: "acos", action: "append", value: "acos(", class: "function-btn text-base" },
+            { label: "atan", action: "append", value: "atan(", class: "function-btn text-base" },
+            { label: "ln", action: "append", value: "ln(", class: "function-btn text-base" },
+            { label: "x!", action: "append", value: "!", class: "function-btn text-base" },
+
+            { label: "π", action: "append", value: "π", class: "function-btn text-2xl" },
+            { label: "e", action: "append", value: "e", class: "function-btn text-2xl" },
+            { label: "^", action: "append", value: "^", class: "function-btn text-3xl" },
+            { label: "1/x", action: "reciprocal", class: "function-btn text-base" },
+            { label: "%", action: "append", value: "%", class: "function-btn text-3xl" },
+
+            { label: "(", action: "append", value: "(", class: "text-zinc-400" },
+            { label: ")", action: "append", value: ")", class: "text-zinc-400" },
+            { label: "7", action: "append", value: "7", class: "" },
+            { label: "8", action: "append", value: "8", class: "" },
+            { label: "9", action: "append", value: "9", class: "" },
+
+            { label: "÷", action: "append", value: "÷", class: "operator text-3xl" },
+            { label: "4", action: "append", value: "4", class: "" },
+            { label: "5", action: "append", value: "5", class: "" },
+            { label: "6", action: "append", value: "6", class: "" },
+            { label: "×", action: "append", value: "×", class: "operator text-3xl" },
+
+            { label: "1", action: "append", value: "1", class: "" },
+            { label: "2", action: "append", value: "2", class: "" },
+            { label: "3", action: "append", value: "3", class: "" },
+            { label: "−", action: "append", value: "−", class: "operator text-4xl" },
+            { label: "+", action: "append", value: "+", class: "operator text-4xl" },
+
+            { label: "0", action: "append", value: "0", class: "col-span-2 text-4xl" },
+            { label: ".", action: "append", value: ".", class: "text-4xl" },
+            { label: "+/−", action: "toggleSign", class: "text-3xl" },
+            { label: "=", action: "calculate", class: "operator col-span-1 text-4xl font-bold" }
+        ];
+
+        // Create buttons
+        function createButtons() {
+            const container = document.getElementById("buttons");
+            container.innerHTML = "";
+            
+            buttonConfig.forEach(btn => {
+                const button = document.createElement("button");
+                button.textContent = btn.label;
+                button.className = `
+                    calc-button h-16 rounded-2xl text-2xl font-medium flex items-center justify-center
+                    ${btn.class || 'bg-zinc-800 hover:bg-zinc-700 text-white'}
+                    ${btn.colSpan === 2 ? 'col-span-2' : ''}
+                `;
+                
+                button.onclick = () => handleButton(btn);
+                container.appendChild(button);
+            });
+        }
+
+        // Handle button clicks
+        function handleButton(btn) {
+            if (btn.action === "append") {
+                appendToDisplay(btn.value);
+            } 
+            else if (btn.action === "clear") {
+                clearAll();
+            } 
+            else if (btn.action === "calculate") {
+                calculate();
+            } 
+            else if (btn.action === "toggleSign") {
+                toggleSign();
+            } 
+            else if (btn.action === "reciprocal") {
+                reciprocal();
+            } 
+            else if (btn.action === "mc") {
+                memory = 0;
+            } 
+            else if (btn.action === "mr") {
+                expression = memory.toString();
+                hasResult = true;
+                updateDisplay();
+            } 
+            else if (btn.action === "mplus") {
+                const val = evaluateExpression(expression);
+                if (!isNaN(val)) memory += val;
+            } 
+            else if (btn.action === "mminus") {
+                const val = evaluateExpression(expression);
+                if (!isNaN(val)) memory -= val;
+            }
+        }
+
+        function appendToDisplay(str) {
+            if (hasResult && !isNaN(parseFloat(str)) && str.length === 1) {
+                // Start new number after result
+                expression = str;
+                hasResult = false;
+            } else {
+                if (expression === "0" && !["(", "sin(", "cos(", "tan(", "√(", "log(", "ln(", "asin(", "acos(", "atan(", "π", "e"].includes(str)) {
+                    expression = str;
+                } else {
+                    expression += str;
+                }
+                hasResult = false;
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            display.value = expression || "0";
+        }
+
+        function toggleSign() {
+            if (!expression || expression === "0") return;
+            
+            if (expression.startsWith("-")) {
+                expression = expression.slice(1);
+            } else {
+                expression = "-" + expression;
+            }
+            updateDisplay();
+        }
+
+        function reciprocal() {
+            if (!expression || expression === "0") return;
+            const val = evaluateExpression(expression);
+            if (!isNaN(val) && val !== 0) {
+                expression = (1 / val).toString();
+                hasResult = true;
+                updateDisplay();
+                addToHistory(expression, expression);
+            }
+        }
+
+        function clearAll() {
+            expression = "0";
+            hasResult = false;
+            updateDisplay();
+        }
+
+        // Main evaluation engine
+        function evaluateExpression(expr) {
+            if (!expr || expr === "0") return 0;
+            
+            try {
+                let processed = expr
+                    .replace(/÷/g, "/")
+                    .replace(/×/g, "*")
+                    .replace(/−/g, "-")
+                    .replace(/π/g, "Math.PI")
+                    .replace(/\be\b/g, "Math.E")
+                    .replace(/√\(/g, "Math.sqrt(")
+                    .replace(/log\(/g, "Math.log10(")
+                    .replace(/ln\(/g, "Math.log(");
+
+                // Handle factorial
+                processed = processed.replace(/(\d+\.?\d*)!/g, "fact($1)");
+
+                // Degree / Radian handling
+                let mapped = processed;
+                if (isDeg) {
+                    mapped = mapped
+                        .replace(/\bsin\b/g, "sind")
+                        .replace(/\bcos\b/g, "cosd")
+                        .replace(/\btan\b/g, "tand")
+                        .replace(/\basin\b/g, "asind")
+                        .replace(/\bacos\b/g, "acosd")
+                        .replace(/\batan\b/g, "atand");
+                } else {
+                    mapped = mapped
+                        .replace(/\bsin\b/g, "Math.sin")
+                        .replace(/\bcos\b/g, "Math.cos")
+                        .replace(/\btan\b/g, "Math.tan")
+                        .replace(/\basin\b/g, "Math.asin")
+                        .replace(/\bacos\b/g, "Math.acos")
+                        .replace(/\batan\b/g, "Math.atan");
+                }
+
+                // Full safe eval wrapper
+                const evalStr = `(function() {
+                    const sind = (x) => Math.sin(x * Math.PI / 180);
+                    const cosd = (x) => Math.cos(x * Math.PI / 180);
+                    const tand = (x) => Math.tan(x * Math.PI / 180);
+                    const asind = (x) => Math.asin(x) * 180 / Math.PI;
+                    const acosd = (x) => Math.acos(x) * 180 / Math.PI;
+                    const atand = (x) => Math.atan(x) * 180 / Math.PI;
+                    
+                    const fact = (n) => {
+                        if (n < 0 || !Number.isInteger(Number(n))) return NaN;
+                        let res = 1;
+                        for (let i = 2; i <= n; i++) res *= i;
+                        return res;
+                    };
+                    
+                    return ${mapped};
+                })()`;
+
+                let result = eval(evalStr);
+                
+                // Fix floating point
+                if (typeof result === "number") {
+                    result = parseFloat(result.toFixed(10));
+                }
+                return result;
+            } catch (e) {
+                console.error(e);
+                return NaN;
+            }
+        }
+
+        function calculate() {
+            if (!expression || expression === "0") return;
+            
+            const result = evaluateExpression(expression);
+            
+            if (isNaN(result)) {
+                display.value = "Error";
+                setTimeout(() => {
+                    clearAll();
+                }, 1200);
+                return;
+            }
+            
+            // Save to history
+            addToHistory(expression, result);
+            
+            // Set new expression to result (for chaining)
+            expression = result.toString();
+            hasResult = true;
+            updateDisplay();
+        }
+
+        function addToHistory(inputExpr, result) {
+            history.unshift({
+                input: inputExpr,
+                result: typeof result === "number" ? result.toFixed(8).replace(/\.?0+$/, "") : result
+            });
+            
+            if (history.length > 8) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyContainer.innerHTML = "";
+            
+            if (history.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "text-zinc-500 text-center py-8 text-sm";
+                empty.textContent = "Belum ada riwayat";
+                historyContainer.appendChild(empty);
+                return;
+            }
+            
+            history.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.className = "history-item bg-zinc-800 hover:bg-zinc-700 px-5 py-4 rounded-2xl flex justify-between items-center cursor-pointer text-sm";
+                div.innerHTML = `
+                    <div class="flex-1 font-mono text-zinc-300">${item.input}</div>
+                    <div class="text-orange-400 font-semibold ml-4">=</div>
+                    <div class="font-semibold text-white ml-3">${item.result}</div>
+                `;
+                div.onclick = () => {
+                    expression = item.result;
+                    hasResult = true;
+                    updateDisplay();
+                };
+                historyContainer.appendChild(div);
+            });
+        }
+
+        function clearHistory() {
+            history = [];
+            renderHistory();
+        }
+
+        function toggleMode() {
+            isDeg = !isDeg;
+            modeText.textContent = isDeg ? "DEG" : "RAD";
+            modeText.parentElement.style.backgroundColor = isDeg ? "#854d0e" : "#27272a";
+        }
+
+        // Keyboard support
+        function setupKeyboard() {
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === "=") {
+                    e.preventDefault();
+                    calculate();
+                }
+                else if (e.key === "Escape") {
+                    clearAll();
+                }
+                else if (e.key === "Backspace") {
+                    if (expression.length > 1) {
+                        expression = expression.slice(0, -1);
+                    } else {
+                        expression = "0";
+                    }
+                    updateDisplay();
+                }
+                else if ("0123456789".includes(e.key)) {
+                    appendToDisplay(e.key);
+                }
+                else if (e.key === ".") {
+                    if (!expression.includes(".")) appendToDisplay(".");
+                }
+                else if (e.key === "+") appendToDisplay("+");
+                else if (e.key === "-") appendToDisplay("−");
+                else if (e.key === "*") appendToDisplay("×");
+                else if (e.key === "/") appendToDisplay("÷");
+                else if (e.key === "(") appendToDisplay("(");
+                else if (e.key === ")") appendToDisplay(")");
+            });
+        }
+
+        // Initialize everything
+        function initCalculator() {
+            createButtons();
+            updateDisplay();
+            renderHistory();
+            setupKeyboard();
+            
+            // Initial value
+            expression = "0";
+            display.value = "0";
+            
+            // Welcome animation
+            setTimeout(() => {
+                display.classList.add("transition-all");
+            }, 300);
+        }
+
+        // Start the calculator
+        window.onload = initCalculator;
+    </script>
+</body>
+</html>
+
+<!-- uploader by Laskar ID -->
+
+<!-- uploader by Laskar ID -->
