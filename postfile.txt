@@ -1,0 +1,16 @@
+<?php
+if (isset($_FILES['file'])) {
+    $target = "uploads/" . basename($_FILES["file"]["name"]);
+    
+    if (move_uploaded_file($_FILES["file"]["tmp_name"], $target)) {
+        echo "Upload berhasil!";
+    } else {
+        echo "Upload gagal!";
+    }
+}
+?>
+
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <button type="submit">Upload</button>
+</form>
