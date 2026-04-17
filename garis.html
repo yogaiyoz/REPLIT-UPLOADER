@@ -1,0 +1,301 @@
+<!-- uploader by Laskar ID -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematika Kelas 7 - Garis & Sudut</title>
+    <style>
+        /* CSS - Tema Klasik Hitam Putih */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --accent-color: #eeeeee;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .nav-steps {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .step {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+        }
+
+        .step.active {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        h2 {
+            border-left: 5px solid var(--text-color);
+            padding-left: 10px;
+            margin-top: 40px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            background-color: var(--accent-color);
+        }
+
+        .math-box {
+            background-color: #f9f9f9;
+            border: 1px dashed var(--border-color);
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .quiz-section {
+            margin-top: 50px;
+            padding: 20px;
+            border: 2px solid var(--text-color);
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        button {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #444444;
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            vertical-align: middle;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.8rem;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📐 Materi Garis dan Sudut</h1>
+        <p>Matematika Kelas 7 SMP - Kurikulum Merdeka</p>
+    </header>
+
+    <div class="nav-steps">
+        <div class="step active">📖 Materi</div>
+        <div class="step">✍️ Latihan</div>
+        <div class="step">🧠 Evaluasi</div>
+    </div>
+
+    <section>
+        <h2>1. Hubungan Derajat, Menit, dan Detik ⏱️</h2>
+        <p>Dalam pengukuran sudut, selain derajat (°) kita juga mengenal satuan yang lebih kecil yaitu menit (') dan detik (").</p>
+        
+        <div class="math-box">
+            1° (derajat) = 60' (menit) <br>
+            1' (menit) = 60" (detik) <br>
+            1° (derajat) = 3600" (detik)
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <h3>🔄 Konversi Besar ke Kecil</h3>
+                <p>Kalikan dengan 60.</p>
+                <p><i>Contoh: 2° = 2 x 60 = 120'</i></p>
+            </div>
+            <div class="card">
+                <h3>🔄 Konversi Kecil ke Besar</h3>
+                <p>Bagi dengan 60.</p>
+                <p><i>Contoh: 300' = 300 / 60 = 5°</i></p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. Hubungan Antar Sudut 📐</h2>
+        <p>Beberapa jenis hubungan sudut yang sering muncul:</p>
+        <ul>
+            <li><strong>Sudut Berpelurus (Suplemen):</strong> Dua sudut yang jumlahnya 180°.</li>
+            <li><strong>Sudut Berpenyiku (Komplemen):</strong> Dua sudut yang jumlahnya 90°.</li>
+            <li><strong>Sudut Bertolak Belakang:</strong> Dua sudut yang besarnya sama.</li>
+        </ul>
+
+        <div class="math-box">
+            Rumus Cepat: <br>
+            Suplemen ∠A = 180° - ∠A <br>
+            Komplemen ∠A = 90° - ∠A
+        </div>
+    </section>
+
+    <section>
+        <h2>3. Sudut pada Dua Garis Sejajar 🛤️</h2>
+        <p>Jika dua garis sejajar dipotong oleh sebuah garis transversal, maka:</p>
+        <div class="card-grid">
+            <div class="card">
+                <h3>✅ Sama Besar</h3>
+                <p>Sudut Sehadap, Sudut Dalam Berseberangan, Sudut Luar Berseberangan.</p>
+            </div>
+            <div class="card">
+                <h3>➕ Jumlah 180°</h3>
+                <p>Sudut Dalam Sepihak, Sudut Luar Sepihak.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="quiz-section">
+        <h2>📝 10 Latihan Soal</h2>
+        <form id="quizForm">
+            <div class="question">
+                <p>1. Hasil dari 2° 15' jika diubah ke dalam satuan menit adalah... ⏱️</p>
+                <input type="radio" name="q1" value="a"> 135' <br>
+                <input type="radio" name="q1" value="b"> 75' <br>
+            </div>
+
+            <div class="question">
+                <p>2. Sudut yang besarnya 90° disebut sudut... 📐</p>
+                <input type="radio" name="q2" value="a"> Lancip <br>
+                <input type="radio" name="q2" value="b"> Siku-siku <br>
+            </div>
+
+            <div class="question">
+                <p>3. Penyiku dari sudut 35° adalah... 🧩</p>
+                <input type="radio" name="q3" value="a"> 55° <br>
+                <input type="radio" name="q3" value="b"> 145° <br>
+            </div>
+
+            <div class="question">
+                <p>4. Berapa menit dalam 0,5 derajat? ⏲️</p>
+                <input type="radio" name="q4" value="a"> 30' <br>
+                <input type="radio" name="q4" value="b"> 50' <br>
+            </div>
+
+            <div class="question">
+                <p>5. Pelurus dari sudut 110° adalah... 📏</p>
+                <input type="radio" name="q5" value="a"> 70° <br>
+                <input type="radio" name="q5" value="b"> 80° <br>
+            </div>
+
+            <div class="question">
+                <p>6. Dua sudut yang jumlahnya 90° disebut sudut... 🤝</p>
+                <input type="radio" name="q6" value="a"> Suplemen <br>
+                <input type="radio" name="q6" value="b"> Komplemen <br>
+            </div>
+
+            <div class="question">
+                <p>7. 3600 detik sama dengan berapa derajat? 🔄</p>
+                <input type="radio" name="q7" value="a"> 1° <br>
+                <input type="radio" name="q7" value="b"> 10° <br>
+            </div>
+
+            <div class="question">
+                <p>8. Sudut sehadap memiliki besar yang... 👯</p>
+                <input type="radio" name="q8" value="a"> Berbeda <br>
+                <input type="radio" name="q8" value="b"> Sama <br>
+            </div>
+
+            <div class="question">
+                <p>9. Sudut yang besarnya antara 90° dan 180° adalah sudut... 🏹</p>
+                <input type="radio" name="q9" value="a"> Tumpul <br>
+                <input type="radio" name="q9" value="b"> Refleks <br>
+            </div>
+
+            <div class="question">
+                <p>10. Jika ∠A dan ∠B bertolak belakang, dan ∠A = 75°, maka ∠B = ... 🪞</p>
+                <input type="radio" name="q10" value="a"> 105° <br>
+                <input type="radio" name="q10" value="b"> 75° <br>
+            </div>
+
+            <button type="button" onclick="checkAnswers()">Cek Jawaban ✔️</button>
+        </form>
+        <p id="result"></p>
+    </section>
+
+    <footer>
+        <p>© 2026 Modul Matematika Digital - Klasik Hitam Putih 🌑</p>
+    </footer>
+</div>
+
+<script>
+    function checkAnswers() {
+        const answers = {
+            q1: 'a', q2: 'b', q3: 'a', q4: 'a', q5: 'a',
+            q6: 'b', q7: 'a', q8: 'b', q9: 'a', q10: 'b'
+        };
+        
+        let score = 0;
+        let total = 10;
+        let form = document.getElementById('quizForm');
+        let formData = new FormData(form);
+
+        for(let key in answers) {
+            if(formData.get(key) === answers[key]) {
+                score++;
+            }
+        }
+
+        document.getElementById('result').innerHTML = `
+            <div style="margin-top:20px; padding:15px; background:#000; color:#fff;">
+                Skor Kamu: ${score} / ${total} 🎉
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
+
+
+<!-- uploader by Laskar ID -->
