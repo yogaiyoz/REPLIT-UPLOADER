@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>3D Adventure FPS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100vw;height:100vh}
+/* Crosshair */
+#cross{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;width:22px;height:22px;display:none}
+#cross::before,#cross::after{content:'';position:absolute;background:rgba(255,255,255,0.9)}
+#cross::before{width:2px;height:100%;left:50%;top:0;transform:translateX(-50%)}
+#cross::after{width:100%;height:2px;top:50%;left:0;transform:translateY(-50%)}
+/* Overlay */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100;font-family:'Segoe UI',Arial,sans-serif}
+#overlay h1{font-size:30px;color:#00ffcc;text-shadow:0 0 20px #00ffcc88;letter-spacing:2px}
+#overlay p{font-size:13px;color:#aaa;text-align:center;max-width:320px;line-height:1.7}
+#startBtn{padding:13px 38px;background:#00ffcc;color:#000;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
+#startBtn:hover{background:#00ddb0}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:12px;color:#666;margin-top:4px}
+.ctrl-grid span{color:#00ffcc}
+/* HUD */
+#hud{position:fixed;top:10px;left:10px;color:#fff;font-size:12px;font-family:monospace;background:rgba(0,0,0,0.45);padding:5px 10px;border-radius:6px;pointer-events:none;display:none}
+#sprintBar{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);width:120px;height:4px;background:#222;border-radius:2px;display:none}
+#sprintFill{width:100%;height:100%;background:#00ffcc;border-radius:2px;transition:width 0.1s}
+/* Back button */
+#backBtn{position:fixed;top:10px;right:10px;padding:6px 14px;background:rgba(0,0,0,0.6);border:1px solid #333;border-radius:6px;color:#aaa;font-size:12px;cursor:pointer;text-decoration:none;display:none}
+#backBtn:hover{color:#fff;border-color:#555}
+/* ── MOBILE CONTROLS ── */
+#mobileUI{position:fixed;inset:0;pointer-events:none;display:none}
+/* Left joystick zone */
+#joyZone{position:absolute;left:0;bottom:0;width:50%;height:55%;pointer-events:auto}
+#joyPad{position:absolute;left:30px;bottom:30px;width:120px;height:120px}
+.joy-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06)}
+#joyKnob{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.3);top:50%;left:50%;transform:translate(-50%,-50%)}
+/* Right look zone */
+#lookZone{position:absolute;right:0;bottom:0;width:50%;height:70%;pointer-events:auto}
+/* Action buttons */
+#btnJump{position:absolute;right:110px;bottom:50px;width:64px;height:64px;border-radius:50%;background:rgba(0,255,204,0.55);border:2px solid #00ffcc;color:#000;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer}
+#btnSprint{position:absolute;right:190px;bottom:30px;width:56px;height:56px;border-radius:50%;background:rgba(255,165,0,0.55);border:2px solid orange;color:#000;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer}
+/* Lock notice */
+#lockNotice{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#555;font-size:12px;font-family:Arial,sans-serif;pointer-events:none;display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="cross"></div>
+<div id="hud">Chunk: 0,0 | FPS: --</div>
+<div id="sprintBar"><div id="sprintFill"></div></div>
+<a href="/" id="backBtn">← Kembali</a>
+<div id="lockNotice">Klik untuk kontrol mouse</div>
+
+<!-- Overlay start screen -->
+<div id="overlay">
+  <h1>🎮 3D Adventure FPS</h1>
+  <p>Jelajahi dunia tak terbatas dengan rumah dan pohon yang selalu baru!</p>
+  <div class="ctrl-grid">
+    <div><span>WASD</span> / Panah — Gerak</div>
+    <div><span>Mouse</span> — Kamera</div>
+    <div><span>Spasi</span> — Loncat</div>
+    <div><span>Shift</span> — Sprint</div>
+  </div>
+  <p style="font-size:11px;color:#555;margin-top:2px">HP: Joystick kiri gerak · Swipe kanan kamera · Tombol lompat/sprint</p>
+  <button id="startBtn" onclick="startGame()">▶ Mulai Game</button>
+</div>
+
+<!-- Mobile UI -->
+<div id="mobileUI">
+  <div id="joyZone">
+    <div id="joyPad">
+      <div class="joy-ring"></div>
+      <div id="joyKnob"></div>
+    </div>
+  </div>
+  <div id="lookZone"></div>
+  <div id="btnJump">LOMPAT</div>
+  <div id="btnSprint">⚡</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+<script>
+/* ─────────────────────────────────────────────
+   CONSTANTS
+───────────────────────────────────────────── */
+const CHUNK  = 56;        // world units per chunk
+const VDIST  = 2;         // load radius in chunks
+const FLOOR  = 1.75;      // player eye height
+const WALK   = 7;
+const SPRINT = 14;
+const JUMP   = 9.5;
+const GRAV   = -22;
+
+const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+/* ─────────────────────────────────────────────
+   THREE.JS SETUP
+───────────────────────────────────────────── */
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 40, 130);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 180);
+camera.position.y = FLOOR;
+
+const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('c'), antialias:!IS_MOBILE});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, IS_MOBILE ? 1.5 : 2));
+renderer.shadowMap.enabled = false;
+
+window.addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* Lights */
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+const sun = new THREE.DirectionalLight(0xfffbe0, 1.1);
+sun.position.set(60, 100, 40);
+scene.add(sun);
+
+/* Ground — one large plane */
+const groundMat = new THREE.MeshLambertMaterial({color:0x4a7c3a});
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000), groundMat);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+/* Sky clouds */
+(function(){
+  const cMat = new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,opacity:0.8});
+  for(let i=0;i<24;i++){
+    const g = new THREE.Group();
+    const n = 2+Math.floor(Math.random()*3);
+    for(let j=0;j<n;j++){
+      const m = new THREE.Mesh(new THREE.SphereGeometry(5+Math.random()*6,5,4),cMat);
+      m.position.set(j*7-n*3, Math.random()*4, Math.random()*5-2);
+      g.add(m);
+    }
+    g.position.set((Math.random()-.5)*1200, 65+Math.random()*30, (Math.random()-.5)*1200);
+    scene.add(g);
+  }
+})();
+
+/* ─────────────────────────────────────────────
+   MATERIAL CACHE
+───────────────────────────────────────────── */
+const matCache = {};
+function mat(hex){ return matCache[hex]||(matCache[hex]=new THREE.MeshLambertMaterial({color:hex})); }
+
+/* ─────────────────────────────────────────────
+   GEOMETRY HELPERS
+───────────────────────────────────────────── */
+function box(w,h,d,col,px,py,pz,ry){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(col));
+  m.position.set(px||0,py||0,pz||0); if(ry) m.rotation.y=ry; return m;
+}
+function cyl(rt,rb,h,segs,col,px,py,pz){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,segs),mat(col));
+  m.position.set(px||0,py||h/2,pz||0); return m;
+}
+function cone(r,h,segs,col,px,py,pz,ry){
+  const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,segs),mat(col));
+  m.position.set(px||0,py||0,pz||0); if(ry) m.rotation.y=ry; return m;
+}
+function sph(r,segs,col,px,py,pz){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(r,segs,Math.ceil(segs*.6)),mat(col));
+  m.position.set(px||0,py||0,pz||0); return m;
+}
+function grp(...parts){
+  const g=new THREE.Group(); parts.forEach(p=>g.add(p)); return g;
+}
+function win(px,py,pz){ return box(1.3,1.1,.12,0x88ccff,px,py,pz); }
+
+/* ─────────────────────────────────────────────
+   7 HOUSE TYPES
+───────────────────────────────────────────── */
+function house0(){ // Wooden Cabin
+  return grp(
+    box(6,3.5,5,0x8B5E3C, 0,1.75,0),
+    cone(4.5,3,4,0x5C2E0A, 0,5,0, Math.PI/4),
+    box(1,2,.18,0x3D1F00, 0,1,2.52),
+    win(2,2.3,2.52), win(-2,2.3,2.52)
+  );
+}
+function house1(){ // Concrete 2-floor
+  const w=[];
+  for(let f=0;f<2;f++) for(let j=0;j<3;j++)
+    w.push(win(-2.2+j*2.2, 1.8+f*3.4, 3.62));
+  return grp(
+    box(8,7,7,0x999999, 0,3.5,0),
+    box(8.5,.4,7.5,0x777777, 0,7.25,0),
+    box(1.5,2.5,.18,0x555555, 0,1.25,3.62),
+    ...w
+  );
+}
+function house2(){ // Red Brick
+  return grp(
+    box(7,4,6,0xB03020, 0,2,0),
+    box(7.6,.45,6.6,0x6B2000, 1.9,4.3,0,0,  0, 0.42,0),  // slope left
+    box(7.6,.45,6.6,0x6B2000,-1.9,4.3,0,0,  0,-0.42,0),  // slope right
+    box(.5,1.5,6.8,0x5A1800, 0,4.9,0),
+    box(1.2,2.2,.18,0x4a2200, 0,1.1,3.1),
+    win(2.2,2.5,3.1), win(-2.2,2.5,3.1)
+  );
+}
+function house3(){ // Modern Glass
+  return grp(
+    box(9,3.5,6,0x446688, 0,1.75,0),
+    box(9,2,5,0x557799, 0,4.5,0),
+    box(9.5,.3,6.5,0x335577, 0,5.65,0),
+    box(6,3,.1,0xaaddff, 0,1.75,3.1),
+    box(1.6,2.8,.12,0x8888aa, 0,1.4,3.06)
+  );
+}
+function house4(){ // Farmhouse / Barn
+  return grp(
+    box(10,5,7,0xD4A96A, 0,2.5,0),
+    box(5.8,.45,7.6,0x8B3A0F,-2.6,5.6,0, 0,0,0.5),
+    box(5.8,.45,7.6,0x8B3A0F, 2.6,5.6,0, 0,0,-0.5),
+    box(.5,1.2,7.6,0x6B2A00, 0,6.5,0),
+    box(3.5,4,.2,0x7A5520, 0,2,3.6),
+    box(.15,4,.25,0x5A3810, 0,2,3.66)
+  );
+}
+function house5(){ // Tower House
+  const ws=[];
+  for(let f=0;f<3;f++) ws.push(win(0,2+f*3.3,2.12));
+  return grp(
+    box(4,10,4,0xCCBB99, 0,5,0),
+    cone(3.2,4.5,4,0x884422, 0,12.25,0, Math.PI/4),
+    box(1,2,.18,0x553311, 0,1,2.12),
+    ...ws
+  );
+}
+function house6(){ // Bunker
+  return grp(
+    box(9,2,8,0x556644, 0,1,0),
+    box(8.5,.5,7.5,0x445533, 0,2.3,0),
+    cyl(4.5,5,1.2,12,0x667755, 0,.6,0),
+    box(1.2,1.8,.2,0x333322, 0,.9,3.6),
+    cyl(.32,.32,1.1,6,0x444433, 2,2.85,1),
+    cyl(.32,.32,1.1,6,0x444433,-2,2.85,-1)
+  );
+}
+const HOUSES = [house0,house1,house2,house3,house4,house5,house6];
+
+/* ─────────────────────────────────────────────
+   4 TREE TYPES
+───────────────────────────────────────────── */
+function tree0(){ // Pine
+  return grp(
+    cyl(.28,.42,3.2,6,0x5C3A1E, 0,1.6,0),
+    cone(2.6,4.2,8,0x2d6a1f, 0,5.1,0),
+    cone(2.1,3.2,8,0x347a24, 0,7.2,0),
+    cone(1.3,2.2,8,0x3d8a2a, 0,9,0)
+  );
+}
+function tree1(){ // Oak
+  const parts=[cyl(.38,.52,4.5,7,0x5C3A1E, 0,2.25,0)];
+  const offs=[[0,7],[1.6,7.8,1.2],[-.8,7.5,-1.4],[1.2,7.2,-0.6]];
+  offs.forEach(([x,y,z])=>parts.push(sph(2.5+Math.random()*.5,7,0x228B22,x||0,y,z||0)));
+  return grp(...parts);
+}
+function tree2(){ // Palm
+  const parts=[];
+  // Trunk: slight lean
+  for(let i=0;i<7;i++){
+    const seg=cyl(.22,.3,1.4,6,0x8B7355,i*.18,i*1.38+.7,0);
+    seg.rotation.z=-0.04*i; parts.push(seg);
+  }
+  // Fronds
+  const top=7*1.38;
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    const fr=box(4,.14,.45,0x3a7a2a, Math.cos(a)*2.2,top+.5,Math.sin(a)*2.2, a);
+    fr.rotation.z=0.5; parts.push(fr);
+  }
+  return grp(...parts);
+}
+function tree3(){ // Dead Tree
+  const parts=[cyl(.22,.38,6.5,5,0x555555, 0,3.25,0)];
+  [[.55,3.8,.3,2.6],[-.45,3.2,-.4,2.2],[.4,5,.3,1.9],[-.3,5.8,.4,1.5]].forEach(([rz,py,rx,len])=>{
+    const br=cyl(.1,.16,len,4,0x555555,0,py,0);
+    br.rotation.z=rz; br.rotation.x=rx; parts.push(br);
+  });
+  return grp(...parts);
+}
+const TREES=[tree0,tree1,tree2,tree3];
+
+/* ─────────────────────────────────────────────
+   PSEUDO RANDOM (integer hash)
+───────────────────────────────────────────── */
+function h32(x,z){
+  let h=(x*374761393+z*668265263)|0;
+  h=((h^(h>>13))*1274126177)|0;
+  return (h^(h>>16))>>>0;
+}
+function pr(cx,cz,i){ return (h32(cx+i*7919,cz+i*6271)%100000)/100000; }
+
+/* ─────────────────────────────────────────────
+   CHUNK MANAGEMENT
+───────────────────────────────────────────── */
+const chunks=new Map();
+
+function loadChunk(cx,cz){
+  const key=cx+','+cz;
+  if(chunks.has(key)) return;
+  const objs=[];
+
+  // House (55% probability)
+  if(pr(cx,cz,0)<0.55){
+    const ht=Math.floor(pr(cx,cz,1)*7);
+    const hx=(pr(cx,cz,2)-.5)*CHUNK*.65;
+    const hz=(pr(cx,cz,3)-.5)*CHUNK*.65;
+    const ry=pr(cx,cz,9)*Math.PI*2;
+    const h=HOUSES[ht]();
+    h.position.set(cx*CHUNK+hx, 0, cz*CHUNK+hz);
+    h.rotation.y=ry;
+    scene.add(h); objs.push(h);
+  }
+
+  // Trees (0–3)
+  const nt=Math.floor(pr(cx,cz,4)*4);
+  for(let t=0;t<nt;t++){
+    const tt=Math.floor(pr(cx,cz,5+t*3)*4);
+    const tx=(pr(cx,cz,6+t*3)-.5)*CHUNK*.88;
+    const tz=(pr(cx,cz,7+t*3)-.5)*CHUNK*.88;
+    const tr=TREES[tt]();
+    tr.position.set(cx*CHUNK+tx, 0, cz*CHUNK+tz);
+    scene.add(tr); objs.push(tr);
+  }
+
+  chunks.set(key, objs);
+}
+
+function unloadChunk(key){
+  const objs=chunks.get(key);
+  if(!objs) return;
+  objs.forEach(o=>scene.remove(o));
+  chunks.delete(key);
+}
+
+function updateChunks(px,pz){
+  const cx=Math.round(px/CHUNK), cz=Math.round(pz/CHUNK);
+  for(let dx=-VDIST;dx<=VDIST;dx++)
+    for(let dz=-VDIST;dz<=VDIST;dz++)
+      loadChunk(cx+dx, cz+dz);
+
+  for(const key of chunks.keys()){
+    const [kx,kz]=key.split(',').map(Number);
+    if(Math.abs(kx-cx)>VDIST+1||Math.abs(kz-cz)>VDIST+1) unloadChunk(key);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   PLAYER STATE
+───────────────────────────────────────────── */
+const pos   = new THREE.Vector3(0, FLOOR, 0);
+const vel   = new THREE.Vector3();
+let yaw=0, pitch=0, onGround=false;
+let gameStarted=false;
+
+/* ─────────────────────────────────────────────
+   KEYBOARD
+───────────────────────────────────────────── */
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.code]=true; if(e.code==='Space') e.preventDefault();});
+document.addEventListener('keyup',  e=>{keys[e.code]=false;});
+
+/* ─────────────────────────────────────────────
+   POINTER LOCK (PC)
+───────────────────────────────────────────── */
+function initPointerLock(){
+  const cvs=document.getElementById('c');
+  cvs.addEventListener('click',()=>{ if(gameStarted&&!IS_MOBILE) cvs.requestPointerLock(); });
+  document.addEventListener('pointerlockchange',()=>{
+    const locked=!!document.pointerLockElement;
+    document.getElementById('lockNotice').style.display=locked?'none':'block';
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!gameStarted||!document.pointerLockElement) return;
+    yaw  -=e.movementX*.002;
+    pitch -=e.movementY*.002;
+    pitch=Math.max(-1.4,Math.min(1.4,pitch));
+  });
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE CONTROLS
+───────────────────────────────────────────── */
+let joyVec={x:0,y:0}, joyId=null, joyOrigin={x:0,y:0};
+let lookTouches={};
+let jumpPressed=false, sprintActive=false;
+const lookDelta={x:0,y:0};
+
+function setupMobile(){
+  const joyPad =document.getElementById('joyPad');
+  const joyKnob=document.getElementById('joyKnob');
+  const lookZn =document.getElementById('lookZone');
+  const btnJ   =document.getElementById('btnJump');
+  const btnS   =document.getElementById('btnSprint');
+
+  const R=50; // max knob radius
+
+  joyPad.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    const t=e.changedTouches[0];
+    joyId=t.identifier;
+    const r=joyPad.getBoundingClientRect();
+    joyOrigin={x:r.left+r.width/2, y:r.top+r.height/2};
+  },{passive:false});
+
+  document.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    for(const t of e.changedTouches){
+      if(t.identifier===joyId){
+        const dx=t.clientX-joyOrigin.x, dy=t.clientY-joyOrigin.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        const clamped=Math.min(dist,R);
+        const a=Math.atan2(dy,dx);
+        joyVec.x=Math.cos(a)*clamped/R;
+        joyVec.y=Math.sin(a)*clamped/R;
+        joyKnob.style.transform=`translate(calc(-50% + ${Math.cos(a)*clamped}px),calc(-50% + ${Math.sin(a)*clamped}px))`;
+      } else if(lookTouches[t.identifier]){
+        const p=lookTouches[t.identifier];
+        lookDelta.x+=(t.clientX-p.x);
+        lookDelta.y+=(t.clientY-p.y);
+        lookTouches[t.identifier]={x:t.clientX,y:t.clientY};
+      }
+    }
+  },{passive:false});
+
+  document.addEventListener('touchend',e=>{
+    for(const t of e.changedTouches){
+      if(t.identifier===joyId){
+        joyVec={x:0,y:0}; joyId=null;
+        joyKnob.style.transform='translate(-50%,-50%)';
+      }
+      delete lookTouches[t.identifier];
+    }
+  });
+
+  lookZn.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    for(const t of e.changedTouches) lookTouches[t.identifier]={x:t.clientX,y:t.clientY};
+  },{passive:false});
+
+  btnJ.addEventListener('touchstart',e=>{e.preventDefault(); jumpPressed=true;},{passive:false});
+  btnS.addEventListener('touchstart',e=>{e.preventDefault(); sprintActive=true;},{passive:false});
+  btnS.addEventListener('touchend',  e=>{e.preventDefault(); sprintActive=false;},{passive:false});
+
+  // Show mobile controls
+  document.getElementById('mobileUI').style.display='block';
+  document.getElementById('cross').style.display='none';
+}
+
+/* Sprint stamina */
+let stamina=1; // 0..1
+
+/* ─────────────────────────────────────────────
+   UPDATE PLAYER
+───────────────────────────────────────────── */
+function updatePlayer(dt){
+  // Read input
+  let mx=0,mz=0;
+  if(IS_MOBILE){ mx=joyVec.x; mz=joyVec.y; }
+  else{
+    if(keys['KeyW']||keys['ArrowUp'])    mz-=1;
+    if(keys['KeyS']||keys['ArrowDown'])  mz+=1;
+    if(keys['KeyA']||keys['ArrowLeft'])  mx-=1;
+    if(keys['KeyD']||keys['ArrowRight']) mx+=1;
+  }
+
+  const isSprinting= IS_MOBILE ? sprintActive : (keys['ShiftLeft']||keys['ShiftRight']);
+  const moving=mx!==0||mz!==0;
+
+  // Stamina
+  if(isSprinting&&moving){ stamina=Math.max(0,stamina-dt*.35); }
+  else { stamina=Math.min(1,stamina+dt*.6); }
+  const canSprint=isSprinting&&stamina>0;
+  const speed=canSprint?SPRINT:WALK;
+
+  // Normalize diagonal
+  const len=Math.sqrt(mx*mx+mz*mz);
+  if(len>0){ mx/=len; mz/=len; }
+
+  // Rotate by yaw
+  const c=Math.cos(yaw), s=Math.sin(yaw);
+  vel.x=(c*mx-s*mz)*speed;
+  vel.z=(s*mx+c*mz)*speed;
+
+  // Gravity / jump
+  if(onGround){
+    vel.y=0;
+    const jump=IS_MOBILE?jumpPressed:keys['Space'];
+    if(jump){ vel.y=JUMP; onGround=false; }
+  } else { vel.y+=GRAV*dt; }
+  jumpPressed=false;
+
+  pos.x+=vel.x*dt;
+  pos.y+=vel.y*dt;
+  pos.z+=vel.z*dt;
+
+  if(pos.y<=FLOOR){ pos.y=FLOOR; onGround=true; }
+
+  // Update camera look (mobile delta)
+  if(IS_MOBILE){
+    yaw  -=lookDelta.x*.003;
+    pitch-=lookDelta.y*.003;
+    pitch=Math.max(-1.4,Math.min(1.4,pitch));
+    lookDelta.x=0; lookDelta.y=0;
+  }
+
+  // Sprint bar
+  const sb=document.getElementById('sprintBar');
+  const sf=document.getElementById('sprintFill');
+  if(canSprint||stamina<1){
+    sb.style.display='block';
+    sf.style.width=(stamina*100)+'%';
+    sf.style.background=canSprint?'#00ffcc':'#ff8800';
+  } else { sb.style.display='none'; }
+}
+
+/* ─────────────────────────────────────────────
+   UPDATE CAMERA
+───────────────────────────────────────────── */
+function updateCamera(){
+  camera.position.copy(pos);
+  camera.quaternion.setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
+}
+
+/* ─────────────────────────────────────────────
+   GAME LOOP
+───────────────────────────────────────────── */
+let lastTime=0, fpsEl=document.getElementById('hud');
+let frameCt=0, fpsTimer=0;
+
+function loop(time){
+  requestAnimationFrame(loop);
+  if(!gameStarted) return;
+
+  const dt=Math.min((time-lastTime)*.001, .05);
+  lastTime=time;
+
+  updatePlayer(dt);
+  updateCamera();
+  updateChunks(pos.x, pos.z);
+
+  renderer.render(scene,camera);
+
+  // FPS & chunk display
+  frameCt++; fpsTimer+=dt;
+  if(fpsTimer>=.5){
+    const cx=Math.round(pos.x/CHUNK), cz=Math.round(pos.z/CHUNK);
+    fpsEl.textContent=`Chunk: ${cx},${cz} | FPS: ${Math.round(frameCt/fpsTimer)}`;
+    frameCt=0; fpsTimer=0;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   START
+───────────────────────────────────────────── */
+function startGame(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('hud').style.display='block';
+  document.getElementById('backBtn').style.display='block';
+  gameStarted=true;
+  updateChunks(0,0); // pre-load starting area
+  if(!IS_MOBILE){
+    document.getElementById('cross').style.display='block';
+    document.getElementById('lockNotice').style.display='block';
+    document.getElementById('c').requestPointerLock();
+  }
+}
+
+initPointerLock();
+if(IS_MOBILE) setupMobile();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
