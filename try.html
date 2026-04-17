@@ -1,0 +1,519 @@
+<!-- uploader by Laskar ID -->
+
+<!-- uploader by Laskar ID -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>☢𝙃𝘼𝘾𝙆𝙀𝘿☢</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    :root {
+      --green: #00ff41;
+      --dark-green: #003b00;
+      --red: #ff003c;
+      --cyan: #00f0ff;
+      --bg: #000000;
+      --dim: rgba(0, 255, 65, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.08) 2px,
+          rgba(0, 0, 0, 0.08) 4px);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* CRT vignette */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.85) 100%);
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    /* Matrix rain canvas */
+    #matrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.13;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Skull ASCII */
+    .skull {
+      font-size: clamp(7px, 1.5vw, 13px);
+      line-height: 1.2;
+      color: var(--red);
+      text-shadow: 0 0 10px var(--red), 0 0 30px rgba(255, 0, 60, 0.4);
+      margin-bottom: 30px;
+      animation: flicker 4s infinite;
+      white-space: pre;
+    }
+
+    @keyframes flicker {
+
+      0%,
+      95%,
+      100% {
+        opacity: 1;
+      }
+
+      96% {
+        opacity: 0.4;
+      }
+
+      97% {
+        opacity: 1;
+      }
+
+      98% {
+        opacity: 0.2;
+      }
+
+      99% {
+        opacity: 0.9;
+      }
+    }
+
+    /* Main title */
+    .title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(24px, 6vw, 64px);
+      font-weight: 900;
+      color: var(--red);
+      text-shadow: 0 0 20px var(--red), 0 0 60px rgba(255, 0, 60, 0.5), 4px 4px 0 #800020;
+      letter-spacing: 4px;
+      text-align: center;
+      animation: glitch 3s infinite;
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .title::before,
+    .title::after {
+      content: 'YOU HAVE BEEN HACKED';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .title::before {
+      color: var(--cyan);
+      clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+      animation: glitch-top 3s infinite;
+      opacity: 0.7;
+    }
+
+    .title::after {
+      color: var(--green);
+      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+      animation: glitch-bot 3s infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes glitch {
+
+      0%,
+      90%,
+      100% {
+        transform: translate(0);
+      }
+
+      91% {
+        transform: translate(-3px, 1px);
+      }
+
+      92% {
+        transform: translate(3px, -1px);
+      }
+
+      93% {
+        transform: translate(0);
+      }
+    }
+
+    @keyframes glitch-top {
+
+      0%,
+      90%,
+      100% {
+        transform: translate(0);
+      }
+
+      91% {
+        transform: translate(4px, 0);
+      }
+
+      93% {
+        transform: translate(-2px, 0);
+      }
+
+      95% {
+        transform: translate(0);
+      }
+    }
+
+    @keyframes glitch-bot {
+
+      0%,
+      90%,
+      100% {
+        transform: translate(0);
+      }
+
+      91% {
+        transform: translate(-4px, 0);
+      }
+
+      93% {
+        transform: translate(2px, 0);
+      }
+
+      95% {
+        transform: translate(0);
+      }
+    }
+
+    .subtitle {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(10px, 2vw, 16px);
+      color: var(--cyan);
+      letter-spacing: 8px;
+      text-shadow: 0 0 10px var(--cyan);
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    /* Divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--green), var(--cyan), var(--green), transparent);
+      box-shadow: 0 0 8px var(--green);
+      margin: 20px 0;
+    }
+
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-red {
+      background: #ff5f56;
+    }
+
+    .dot-yellow {
+      background: #ffbd2e;
+    }
+
+    .dot-green {
+      background: #27c93f;
+    }
+
+    .terminal-title {
+      font-size: 12px;
+      color: rgba(0, 255, 65, 0.6);
+      margin-left: auto;
+      letter-spacing: 2px;
+    }
+
+    .terminal-body {
+      padding: 20px;
+      font-size: clamp(11px, 1.8vw, 14px);
+      line-height: 1.9;
+    }
+
+    .line {
+      display: block;
+    }
+
+    .prompt {
+      color: var(--red);
+    }
+
+    .cmd {
+      color: var(--cyan);
+    }
+
+    .out {
+      color: rgba(0, 255, 65, 0.8);
+    }
+
+    .warn {
+      color: #ffcc00;
+    }
+
+    .err {
+      color: var(--red);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 16px;
+      background: var(--green);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      width: 100%;
+      margin: 20px 0;
+    }
+
+    .stat-box {
+      border: 1px solid var(--green);
+      padding: 16px;
+      text-align: center;
+      background: rgba(0, 255, 65, 0.03);
+      box-shadow: 0 0 12px rgba(0, 255, 65, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 255, 65, 0.05) 0%, transparent 100%);
+    }
+
+    .stat-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--red);
+      text-shadow: 0 0 15px var(--red);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: rgba(0, 255, 65, 0.6);
+      margin-top: 4px;
+    }
+
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: rgba(0, 255, 65, 0.3);
+      text-align: center;
+    }
+
+    .footer span {
+      color: var(--red);
+    }
+
+    /* Typing animation for terminal lines */
+    .type-1 {
+      animation: fadeIn 0.3s 0.2s both;
+    }
+
+    .type-2 {
+      animation: fadeIn 0.3s 0.6s both;
+    }
+
+    .type-3 {
+      animation: fadeIn 0.3s 1.0s both;
+    }
+
+    .type-4 {
+      animation: fadeIn 0.3s 1.4s both;
+    }
+
+    .type-5 {
+      animation: fadeIn 0.3s 1.8s both;
+    }
+
+    .type-6 {
+      animation: fadeIn 0.3s 2.2s both;
+    }
+
+    .type-7 {
+      animation: fadeIn 0.3s 2.6s both;
+    }
+
+    .type-8 {
+      animation: fadeIn 0.3s 3.0s both;
+    }
+
+    .type-9 {
+      animation: fadeIn 0.3s 3.4s both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="matrix"></canvas>
+
+  <div class="container">
+
+    <!-- ASCII Skull -->
+    <pre class="skull">
+         ░░░░░░░░░░░░░░░░░░░░░░░░░░░
+       ░░  ████████████████████████  ░░
+      ░░  ██████████████████████████  ░░
+     ░░  ████████████████████████████  ░░
+     ░░  ██  ████████████████████  ██  ░░
+     ░░  ██  ████████████████████  ██  ░░
+     ░░  ██  ████████████████████  ██  ░░
+     ░░  ████████████████████████████  ░░
+      ░░  ██████  ██████  ██████████  ░░
+       ░░  ████████████████████████  ░░
+         ░░  ████████████████████  ░░
+           ░░░░░░░░░░░░░░░░░░░░░░░░
+  </pre>
+
+    <h1 class="title">YOU HAVE BEEN HACKED</h1>
+    <p class="subtitle">// FREE PALESTINE — JUSTICE FOR IRAN \\</p>
+
+    <div class="divider"></div>
+
+
+  <script>
+    // Matrix rain
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*()アイウエオカキクケコサシスセソ';
+    const fontSize = 14;
+    const cols = Math.floor(canvas.width / fontSize);
+    const drops = Array(cols).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0,0,0,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff41';
+      ctx.font = fontSize + 'px monospace';
+      drops.forEach((y, i) => {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, i * fontSize, y * fontSize);
+        if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      });
+    }
+    setInterval(drawMatrix, 50);
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Counter animations
+    function animateCounter(id, target, duration) {
+      const el = document.getElementById(id);
+      let start = 0;
+      const step = target / (duration / 50);
+      const interval = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = Math.floor(start).toLocaleString();
+        if (start >= target) clearInterval(interval);
+      }, 50);
+    }
+
+    setTimeout(() => {
+      animateCounter('files', 14829, 2000);
+      animateCounter('data', 4.7 * 100, 2000);
+      animateCounter('creds', 3291, 2000);
+      animateCounter('backdoors', 7, 1500);
+    }, 500);
+
+    // Fix data display
+    const dataEl = document.getElementById('data');
+    setTimeout(() => { dataEl.textContent = '4.7'; }, 2550);
+
+    // Countdown timer
+    let seconds = 600;
+    const timerEl = document.getElementById('timer');
+    const timerInterval = setInterval(() => {
+      seconds--;
+      if (seconds <= 0) { timerEl.textContent = '00:00'; clearInterval(timerInterval); return; }
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      timerEl.textContent = m + ':' + s;
+      if (seconds <= 60) timerEl.style.color = '#ff003c';
+    }, 1000);
+  </script>
+</body>
+
+</html>
+
+<!-- uploader by Laskar ID -->
+
+<!-- uploader by Laskar ID -->
