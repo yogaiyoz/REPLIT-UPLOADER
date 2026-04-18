@@ -1,0 +1,11 @@
+Pemerintah Indonesia Uji Coba Blockchain Untuk Dokumen Kependudukan, Anti-Pemalsuan
+
+Jakarta, Oktober 2024 — Kementerian Dalam Negeri dan Badan Siber dan Sandi Negara (BSSN) meluncurkan pilot project penggunaan teknologi blockchain untuk menerbitkan dokumen kependudukan digital yang tidak bisa dipalsukan, dimulai dari KTP dan akta kelahiran di lima kota percontohan.
+
+Dengan sistem ini, setiap dokumen memiliki hash kriptografis unik yang tersimpan di jaringan blockchain permissionless, memungkinkan verifikasi instan oleh siapa pun tanpa perlu menghubungi instansi pemerintah.
+
+"Pemalsuan KTP selama ini menjadi celah untuk kejahatan serius — TPPU, penipuan identitas, terorisme. Blockchain menutup celah itu," kata Mendagri Tito Karnavian.
+
+Dalam enam bulan pilot, lebih dari 200.000 dokumen sudah diterbitkan dengan sistem baru. Tingkat keberhasilan verifikasi: 99,97 persen.
+
+Rollout nasional dijadwalkan mulai 2026 dan akan mencakup 275 juta dokumen kependudukan aktif.
