@@ -1,0 +1,11 @@
+Serangan Siber Besar Sasar 3 Bank Besar Indonesia, Data 2 Juta Nasabah Diselamatkan
+
+Jakarta, September 2024 — Tiga bank besar Indonesia menghadapi serangan siber terkoordinasi dalam rentang waktu 72 jam pada pekan lalu, namun sistem pertahanan berlapis yang telah dibangun sejak 2023 berhasil menggagalkan upaya pencurian data skala masif.
+
+Ketiga bank yang tidak disebutkan namanya itu langsung berkoordinasi dengan BSSN dan mengaktifkan protokol darurat siber level 1.
+
+"Ini bukan serangan acak. Ini terkoordinasi dan sangat sophisticated. Kami yakin aktor negara terlibat," kata sumber di BSSN yang tidak mau disebutkan namanya.
+
+Total data lebih dari 2 juta nasabah sempat dalam ancaman, namun enkripsi end-to-end yang diperbarui berhasil mencegah eksfiltrasi.
+
+Indonesia segera menggelar rapat darurat bersama ASEAN Cybersecurity Coordination Center dan membagikan signature serangan ke seluruh anggota untuk pencegahan regional.
