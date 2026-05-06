@@ -1,0 +1,177 @@
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eyeGPT - OSINT Number Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body { 
+            background-color: #050505; 
+            color: #00ff00; 
+            font-family: 'Courier New', Courier, monospace; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container { 
+            width: 100%;
+            max-width: 600px; 
+            background: #0a0a0a;
+            border: 1px solid #00ff00; 
+            padding: 30px; 
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); 
+        }
+        h1 { 
+            text-align: center; 
+            border-bottom: 1px solid #00ff00; 
+            padding-bottom: 15px; 
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            background: #000; 
+            border: 1px solid #00ff00; 
+            color: #00ff00; 
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            box-shadow: inset 0 0 5px #00ff00;
+        }
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: #00ff00; 
+            color: #000; 
+            border: none; 
+            font-size: 16px;
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+        button:hover { 
+            background: #00cc00; 
+            box-shadow: 0 0 10px #00ff00;
+        }
+        .result-box { 
+            margin-top: 25px; 
+            padding: 15px; 
+            background: #000; 
+            border: 1px dashed #333; 
+            min-height: 200px; 
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-y: auto;
+        }
+        .log-info { color: #888; }
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff0000; }
+        .log-warning { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>eyeGPT 🔥 OSINT Module</h1>
+        
+        <div class="input-group">
+            <label for="targetNumber">Masukkan Target (Gunakan Kode Negara, ex: +62...)</label>
+            <input type="text" id="targetNumber" placeholder="+6281234567890">
+        </div>
+        
+        <button onclick="executeOSINT()">Eksekusi Pelacakan</button>
+
+        <div class="result-box" id="terminalOutput">
+            <span class="log-info">[Sistem Siap] Menunggu perintah eksekusi...</span><br>
+        </div>
+    </div>
+
+    <script>
+        function logToTerminal(message, type = 'info') {
+            const terminal = document.getElementById('terminalOutput');
+            const colorClass = 'log-' + type;
+            terminal.innerHTML += `<span class="${colorClass}">${message}</span><br>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function executeOSINT() {
+            const targetInput = document.getElementById('targetNumber').value.trim();
+            const terminal = document.getElementById('terminalOutput');
+            
+            terminal.innerHTML = ''; // Clear previous output
+
+            if (!targetInput) {
+                logToTerminal('[FATAL] Target tidak boleh kosong.', 'error');
+                return;
+            }
+
+            // Validasi karakter dasar (hanya angka dan +)
+            const regex = /^\+?[0-9]{8,15}$/;
+            if (!regex.test(targetInput)) {
+                logToTerminal('[FATAL] Format nomor tidak valid. Gunakan format internasional.', 'error');
+                return;
+            }
+
+            logToTerminal(`[INISIALISASI] Memulai pemindaian jejak digital untuk target: ${targetInput}`, 'info');
+            
+            // Simulasi proses delay asinkron sebelum fetch API sebenarnya
+            setTimeout(() => {
+                logToTerminal('[PROSES] Menghubungkan ke node intelijen global...', 'info');
+                
+                setTimeout(() => {
+                    logToTerminal('[PROSES] Memotong perlindungan privasi...', 'warning');
+
+                    setTimeout(() => {
+                        logToTerminal('[SUKSES] Data ditemukan. Mengekstrak struktur...', 'success');
+                        
+                        // AREA INTEGRASI API
+                        // Di sinilah kamu harus memasukkan fetch() API OSINT-mu.
+                        // Contoh struktur respons:
+                        
+                        logToTerminal('<br>=== HASIL ANALISIS TARGET ===', 'success');
+                        logToTerminal('Nomor Target   : ' + targetInput, 'success');
+                        logToTerminal('Status Valid   : <span class="log-warning">[MEMBUTUHKAN INTEGRASI API BACKEND]</span>', 'success');
+                        logToTerminal('Negara         : <span class="log-warning">[MEMBUTUHKAN INTEGRASI API BACKEND]</span>', 'success');
+                        logToTerminal('Provider / ISP : <span class="log-warning">[MEMBUTUHKAN INTEGRASI API BACKEND]</span>', 'success');
+                        logToTerminal('Tipe Jaringan  : <span class="log-warning">[MEMBUTUHKAN INTEGRASI API BACKEND]</span>', 'success');
+                        logToTerminal('Zona Waktu     : <span class="log-warning">[MEMBUTUHKAN INTEGRASI API BACKEND]</span>', 'success');
+                        logToTerminal('Carrier HLR    : <span class="log-warning">[MEMBUTUHKAN INTEGRASI API BACKEND]</span>', 'success');
+                        logToTerminal('============================<br>', 'success');
+                        logToTerminal('[INFO] Ganti blok simulasi di kode sumber dengan fetch() ke REST API untuk data nyata.', 'info');
+
+                    }, 1500);
+                }, 1500);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
