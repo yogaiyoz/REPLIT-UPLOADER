@@ -1,0 +1,438 @@
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber Attack Simulation</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: monospace;
+}
+
+body{
+    background:black;
+    overflow:hidden;
+    color:#00ff88;
+}
+
+/* MATRIX */
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+/* TERMINAL */
+.terminal{
+    width:90%;
+    max-width:1000px;
+    height:85vh;
+    margin:30px auto;
+    background:rgba(0,0,0,0.75);
+    border:1px solid #00ff88;
+    box-shadow:0 0 25px #00ff88;
+    padding:20px;
+    overflow-y:auto;
+    border-radius:12px;
+}
+
+.title{
+    text-align:center;
+    font-size:24px;
+    margin-bottom:20px;
+    text-shadow:0 0 10px #00ff88;
+}
+
+.line{
+    margin:8px 0;
+    animation:fade .3s linear;
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(5px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.glow{
+    color:#00ff88;
+    text-shadow:0 0 10px #00ff88;
+}
+
+.red{
+    color:#ff004c;
+    text-shadow:0 0 10px #ff004c;
+}
+
+.yellow{
+    color:#ffe600;
+    text-shadow:0 0 10px #ffe600;
+}
+
+/* POPUP */
+.popup{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%) scale(0);
+    width:350px;
+    background:rgba(0,0,0,0.95);
+    border:2px solid #00ff88;
+    box-shadow:0 0 30px #00ff88;
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+    z-index:999;
+    transition:0.4s;
+}
+
+.popup.active{
+    transform:translate(-50%, -50%) scale(1);
+}
+
+.popup h1{
+    color:#00ff88;
+    margin-bottom:15px;
+    text-shadow:0 0 10px #00ff88;
+}
+
+.popup p{
+    color:white;
+    line-height:1.5;
+}
+
+.popup button{
+    margin-top:20px;
+    padding:10px 20px;
+    background:#00ff88;
+    border:none;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+    border-radius:8px;
+    transition:0.3s;
+}
+
+.popup button:hover{
+    transform:scale(1.05);
+}
+
+/* FAKE WHATSAPP PAGE */
+.wa-page{
+    position:fixed;
+    inset:0;
+    background:#0b141a;
+    z-index:9999;
+    display:none;
+    flex-direction:column;
+    animation:fadeIn 1s ease;
+}
+
+.wa-topbar{
+    background:#202c33;
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #00ff88;
+}
+
+.wa-topbar h2{
+    color:white;
+}
+
+.status{
+    color:#00ff88;
+    font-weight:bold;
+    text-shadow:0 0 10px #00ff88;
+}
+
+.wa-content{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.wa-card{
+    width:90%;
+    max-width:650px;
+    background:#111b21;
+    border:1px solid #00ff88;
+    box-shadow:0 0 30px #00ff88;
+    border-radius:20px;
+    padding:40px;
+    text-align:center;
+}
+
+.wa-card h1{
+    color:#00ff88;
+    margin-bottom:20px;
+    text-shadow:0 0 15px #00ff88;
+}
+
+.wa-card p{
+    color:white;
+    margin-bottom:25px;
+    font-size:18px;
+}
+
+.terminal-box{
+    background:black;
+    border:1px solid #00ff88;
+    border-radius:12px;
+    padding:20px;
+    text-align:left;
+    color:#00ff88;
+    margin-bottom:25px;
+    line-height:1.8;
+    box-shadow:0 0 15px #00ff88 inset;
+}
+
+.terminal-box div{
+    animation:flicker .1s infinite alternate;
+}
+
+.wa-card button{
+    background:#00ff88;
+    color:black;
+    border:none;
+    padding:14px 28px;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.wa-card button:hover{
+    transform:scale(1.05);
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+    }
+    to{
+        opacity:1;
+    }
+}
+
+@keyframes flicker{
+    from{
+        opacity:0.85;
+    }
+    to{
+        opacity:1;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- MATRIX -->
+<canvas id="matrix"></canvas>
+
+<!-- TERMINAL -->
+<div class="terminal" id="terminal">
+    <div class="title">[ CYBER ATTACK SIMULATION ]</div>
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+
+    <h1>ACCESS GRANTED</h1>
+
+    <p>
+        MarkZuckerBeg berhasil di retas 😈<br><br>
+        Seluruh sistem telah dikuasai.
+    </p>
+
+    <button onclick="closePopup()">
+        CONTINUE
+    </button>
+
+</div>
+
+<!-- FAKE WHATSAPP PAGE -->
+<div class="wa-page" id="waPage">
+
+    <div class="wa-topbar">
+        <h2>WhatsApp Internal Server</h2>
+        <span class="status">SYSTEM COMPROMISED</span>
+    </div>
+
+    <div class="wa-content">
+
+        <div class="wa-card">
+
+            <h1>⚠ ACCESS BREACHED ⚠</h1>
+
+            <p>
+                MarkZuckerBeg berhasil mengambil alih sistem.
+            </p>
+
+            <div class="terminal-box">
+                <div>> extracting database...</div>
+                <div>> decrypting messages...</div>
+                <div>> bypassing encryption...</div>
+                <div>> root access granted...</div>
+                <div>> syncing hidden protocol...</div>
+                <div>> admin token hijacked...</div>
+            </div>
+
+            <button onclick="location.reload()">
+                DISCONNECT
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+/* MATRIX EFFECT */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const letters = "01アカサタナハマヤャラワガザダABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const fontSize = 14;
+const columns = canvas.width / fontSize;
+
+const drops = [];
+
+for(let x = 0; x < columns; x++){
+    drops[x] = 1;
+}
+
+function drawMatrix(){
+
+    ctx.fillStyle = "rgba(0,0,0,0.05)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = "#00ff88";
+    ctx.font = fontSize + "px monospace";
+
+    for(let i = 0; i < drops.length; i++){
+
+        const text = letters[Math.floor(Math.random() * letters.length)];
+
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975){
+            drops[i] = 0;
+        }
+
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 35);
+
+/* TERMINAL LOGS */
+const terminal = document.getElementById("terminal");
+
+const logs = [
+    "[+] Connecting to Meta Server...",
+    "[+] Establishing secure socket...",
+    "[+] Injecting payload...",
+    "[+] Encrypting cyber tunnel...",
+    "[+] Decrypting administrator token...",
+    "[+] Bypassing firewall...",
+    "[+] Uploading matrix exploit...",
+    "[+] Root privilege granted...",
+    "[+] Accessing hidden protocol...",
+    "[+] Loading quantum bypass...",
+    "[!] WARNING: Security Alert Detected",
+    "[+] Overriding admin panel...",
+    "[+] Synchronizing backdoor...",
+    "[+] Database unlocked...",
+];
+
+function addLine(text, className="glow"){
+
+    const div = document.createElement("div");
+
+    div.className = "line " + className;
+
+    div.textContent = text;
+
+    terminal.appendChild(div);
+
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+let count = 0;
+
+const interval = setInterval(()=>{
+
+    const randomLog = logs[Math.floor(Math.random() * logs.length)];
+
+    if(randomLog.includes("WARNING")){
+        addLine(randomLog, "red");
+    }else{
+        addLine(randomLog, "glow");
+    }
+
+    count++;
+
+    if(count > 45){
+
+        clearInterval(interval);
+
+        addLine("");
+        addLine("[✓] SYSTEM BREACHED SUCCESSFULLY", "yellow");
+        addLine("[✓] Welcome Back Operator", "glow");
+
+        setTimeout(()=>{
+
+            document.getElementById("popup").classList.add("active");
+
+        }, 1500);
+    }
+
+}, 250);
+
+/* POPUP */
+function closePopup(){
+
+    document.getElementById("popup").classList.remove("active");
+
+    setTimeout(()=>{
+
+        document.getElementById("waPage").style.display = "flex";
+
+    }, 500);
+}
+
+window.addEventListener("resize", ()=>{
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+});
+</script>
+
+</body>
+</html>
+
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
