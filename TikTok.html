@@ -1,0 +1,132 @@
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok Downloader</title>
+</head>
+
+<body 
+style="
+margin:0;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+flex-direction:column;
+text-align:center;
+"
+>
+
+<h2>TikTok Downloader</h2>
+
+<input 
+type="text" 
+id="url" 
+placeholder="Tempel link TikTok"
+style="
+width:300px;
+padding:10px;
+margin-bottom:10px;
+"
+>
+
+<button 
+onclick="fetchData()"
+style="
+padding:10px 20px;
+cursor:pointer;
+"
+>
+Download
+</button>
+
+<br>
+
+<div id="result"></div>
+
+<div
+style="
+position:fixed;
+bottom:10px;
+left:0;
+right:0;
+opacity:0.15;
+font-size:12px;
+user-select:none;
+pointer-events:none;
+"
+>
+© <span id="year"></span> • Panduwardhana
+</div>
+
+<script>
+document.getElementById("year").innerText = new Date().getFullYear();
+
+async function fetchData() {
+    const input = document.getElementById('url').value;
+    const result = document.getElementById('result');
+
+    if (!input) return alert("URL TikTok");
+
+    result.innerHTML = "Loading...";
+
+    try {
+        const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(input)}`);
+        const json = await res.json();
+        const data = json.data;
+
+        result.innerHTML = "";
+
+        if (data.play) {
+            result.innerHTML += `
+                <br>
+                <video src="${data.play}" controls width="300"></video>
+                <br><br>
+
+                <a href="${data.play}" download="video.mp4">
+                    <button>Download Video</button>
+                </a>
+
+                <br><br>
+
+                <a href="${data.music}" download="audio.mp3">
+                    <button>Download MP3</button>
+                </a>
+
+                <br><br>
+            `;
+        }
+
+        if (data.images) {
+            data.images.forEach((img, i) => {
+                result.innerHTML += `
+                    <img src="${img}" width="200">
+                    <br><br>
+
+                    <a href="${img}" download="foto_${i+1}.jpg">
+                        <button>Download Foto ${i+1}</button>
+                    </a>
+
+                    <br><br>
+                `;
+            });
+        }
+
+    } catch (err) {
+        result.innerHTML = "Gagal mengambil data";
+    }
+}
+</script>
+
+</body>
+</html>
+
+<!-- uploader by Laskar Group -->
+
+<!-- uploader by Laskar Group -->
