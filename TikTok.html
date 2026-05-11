@@ -15,6 +15,8 @@ align-items:center;
 flex-direction:column;
 min-height:100vh;
 text-align:center;
+padding:20px;
+box-sizing:border-box;
 ">
 
 <h2>TikTok Downloader</h2>
@@ -22,13 +24,15 @@ text-align:center;
 <input 
 type="text" 
 id="url" 
-placeholder="Tempel link TikTok"
+placeholder="URL TikTok"
 style="
 width:300px;
 padding:10px;
-margin-bottom:10px;
+outline:none;
 "
 >
+
+<br>
 
 <button onclick="fetchData()" style="
 padding:10px 20px;
@@ -37,9 +41,13 @@ cursor:pointer;
 Download
 </button>
 
-<br>
+<br><br>
 
-<div id="result"></div>
+<div id="result" style="
+width:100%;
+max-width:400px;
+word-break:break-word;
+"></div>
 
 <div style="
 position:fixed;
@@ -55,73 +63,153 @@ pointer-events:none;
 </div>
 
 <script>
+
 document.getElementById("year").innerText = new Date().getFullYear();
 
 async function fetchData() {
-    const input = document.getElementById('url').value;
-    const result = document.getElementById('result');
 
-    if (!input) return alert("Masukkan link TikTok");
+    const input = document.getElementById("url").value;
+    const result = document.getElementById("result");
+
+    if (!input) {
+        alert("Masukkan URL TikTok");
+        return;
+    }
 
     result.innerHTML = "Loading...";
 
     try {
-        const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(input)}`);
+
+        const res = await fetch(
+            `https://www.tikwm.com/api/?url=${encodeURIComponent(input)}`
+        );
+
         const json = await res.json();
         const data = json.data;
 
-        result.innerHTML = "";
+        const tags = data.title
+            ? data.title.match(/#\w+/g)
+            : [];
 
-        if (data.play) {
-            result.innerHTML = `
-                <br>
+        result.innerHTML = `
 
-                <video 
-                    controls 
-                    controlsList="nodownload"
-                    disablePictureInPicture
-                    width="300"
-                    style="max-width:90%;"
-                >
-                    <source src="${data.play}" type="video/mp4">
-                </video>
+            <img 
+                src="${data.cover}" 
+                width="150"
+                style="
+                border-radius:10px;
+                object-fit:cover;
+                "
+            >
 
-                <br><br>
+            <br><br>
 
-                <a href="${data.play}" download="video.mp4">
-                    <button>Download Video</button>
-                </a>
+            <b>@${data.author.unique_id}</b>
 
-                <br><br>
+            <br><br>
 
-                <a href="${data.music}" download="audio.mp3">
-                    <button>Download MP3</button>
-                </a>
-            `;
-        }
+            <div style="
+            font-size:14px;
+            ">
+                ${data.title || "Tidak ada caption"}
+            </div>
 
-        if (data.images) {
-            data.images.forEach((img, i) => {
-                result.innerHTML += `
-                    <br>
+            <br>
 
-                    <img src="${img}" width="200">
+            <div style="
+            font-size:13px;
+            opacity:0.7;
+            ">
+                ${tags ? tags.join(" ") : ""}
+            </div>
 
-                    <br><br>
+            <br><br>
 
-                    <a href="${img}" download="foto_${i+1}.jpg">
-                        <button>Download Foto ${i+1}</button>
-                    </a>
+            <button onclick="openPlayer('${data.play}')" style="
+            padding:10px 20px;
+            cursor:pointer;
+            ">
+                ▶ Play Video
+            </button>
 
-                    <br>
-                `;
-            });
-        }
+            <br><br>
+
+            <a href="${data.play}" download="video.mp4">
+                <button style="
+                padding:10px 20px;
+                cursor:pointer;
+                ">
+                    Download Video
+                </button>
+            </a>
+
+            <br><br>
+
+            <a href="${data.music}" download="audio.mp3">
+                <button style="
+                padding:10px 20px;
+                cursor:pointer;
+                ">
+                    Download MP3
+                </button>
+            </a>
+
+        `;
 
     } catch (err) {
+
         result.innerHTML = "Gagal mengambil data";
+
     }
+
 }
+
+function openPlayer(videoUrl) {
+
+    const popup = window.open("", "_blank");
+
+    popup.document.write(`
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+        <title>Player</title>
+        </head>
+
+        <body style="
+        margin:0;
+        background:black;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        ">
+
+        <video
+            controls
+            autoplay
+            controlsList="nodownload noplaybackrate"
+            disablePictureInPicture
+            oncontextmenu="return false"
+            style="
+            width:100%;
+            max-width:500px;
+            height:auto;
+            "
+        >
+            <source src="${videoUrl}" type="video/mp4">
+        </video>
+
+        </body>
+
+        </html>
+
+    `);
+
+}
+
 </script>
 
 </body>
