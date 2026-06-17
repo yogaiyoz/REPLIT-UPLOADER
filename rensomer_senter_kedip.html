@@ -1,0 +1,775 @@
+<!-- uploader by Laskar Group -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #000;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+
+        #matrix {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.06;
+        }
+
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 4px
+            );
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #flash {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* ===== ENTER PAGE ===== */
+        #enterPage {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            transition: opacity 0.5s ease;
+        }
+
+        #enterPage.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .half-white {
+            width: 50%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .half-black {
+            width: 50%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid #111;
+        }
+
+        .half-white span {
+            color: #000;
+            font-size: 10px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            writing-mode: vertical-rl;
+            opacity: 0.2;
+        }
+
+        #enterBtn {
+            background: transparent;
+            border: 1px solid #222;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            padding: 14px 36px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #enterBtn:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* ===== CORNERS ===== */
+        .corner {
+            position: fixed;
+            width: 28px;
+            height: 28px;
+            z-index: 100;
+            opacity: 0.25;
+        }
+        .c-tl { top:14px; left:14px; border-top:1px solid #fff; border-left:1px solid #fff; }
+        .c-tr { top:14px; right:14px; border-top:1px solid #fff; border-right:1px solid #fff; }
+        .c-bl { bottom:14px; left:14px; border-bottom:1px solid #fff; border-left:1px solid #fff; }
+        .c-br { bottom:14px; right:14px; border-bottom:1px solid #fff; border-right:1px solid #fff; }
+
+        /* TORCH DOT */
+        .torch-dot {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 8px #fff;
+            z-index: 200;
+            transition: opacity 0.05s;
+        }
+        .torch-dot.off { opacity: 0.08; box-shadow: none; }
+
+        /* ===== RANSOM UI ===== */
+        #ransomUI {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #ransomUI.show { display: flex; }
+
+        /* SKULL — lebih gede */
+        .skull-img {
+            width: clamp(90px, 18vw, 130px);
+            height: clamp(90px, 18vw, 130px);
+            object-fit: contain;
+            animation: imgPulse 2.5s ease infinite;
+        }
+
+        @keyframes imgPulse {
+            0%,100% { filter: drop-shadow(0 0 12px rgba(255,255,255,0.3)); }
+            50%      { filter: drop-shadow(0 0 28px rgba(255,255,255,0.7)); }
+        }
+
+        /* TITLE */
+        .r-title {
+            font-size: clamp(16px, 4vw, 34px);
+            color: #fff;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255,255,255,0.4);
+            position: relative;
+            animation: titleFlick 5s infinite;
+            text-align: center;
+        }
+
+        .r-title::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 3px; top: 0;
+            color: #aaa;
+            clip-path: polygon(0 25%, 100% 25%, 100% 45%, 0 45%);
+            animation: glA 5s infinite;
+            opacity: 0;
+        }
+
+        .r-title::after {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px; top: 0;
+            color: #ccc;
+            clip-path: polygon(0 62%, 100% 62%, 100% 78%, 0 78%);
+            animation: glB 5s infinite;
+            opacity: 0;
+        }
+
+        @keyframes titleFlick {
+            0%,93%,100% { opacity: 1; }
+            94% { opacity: 0.2; }
+            95% { opacity: 1; }
+            96% { opacity: 0.1; }
+        }
+
+        @keyframes glA {
+            0%,87%,100% { opacity: 0; transform: translate(0); }
+            88% { opacity: 0.6; transform: translate(-5px, 1px); }
+            90% { opacity: 0.6; transform: translate(5px, -1px); }
+            92% { opacity: 0; }
+        }
+
+        @keyframes glB {
+            0%,89%,100% { opacity: 0; transform: translate(0); }
+            90% { opacity: 0.5; transform: translate(4px, 2px); }
+            92% { opacity: 0.5; transform: translate(-3px, -1px); }
+            94% { opacity: 0; }
+        }
+
+        .by-line {
+            color: #555;
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-top: -6px;
+        }
+
+        .by-line span { color: #ccc; }
+
+        /* WARNING BOX */
+        .warn-box {
+            border: 1px solid #ffffff18;
+            background: rgba(255,255,255,0.02);
+            padding: 16px 20px;
+            width: min(480px, 92vw);
+        }
+
+        .warn-header {
+            color: #fff;
+            font-size: 9px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #ffffff15;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .warn-header span { color: #666; }
+
+        .warn-line {
+            font-size: 12px;
+            line-height: 1.9;
+            letter-spacing: 1px;
+        }
+
+        .warn-line.hi  { color: #fff; }
+        .warn-line.mid { color: #aaa; }
+        .warn-line.lo  { color: #555; font-size: 10px; }
+        .warn-line.lo b { color: #888; }
+
+        /* COUNTDOWN */
+        .cd-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cd-label {
+            color: #444;
+            font-size: 8px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .cd-time {
+            font-size: clamp(30px, 7vw, 50px);
+            color: #fff;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* PROGRESS */
+        .prog-block { width: min(480px, 92vw); }
+
+        .prog-top {
+            display: flex;
+            justify-content: space-between;
+            color: #555;
+            font-size: 9px;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .prog-top span { color: #aaa; }
+
+        .prog-track {
+            width: 100%;
+            height: 1px;
+            background: #1a1a1a;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            box-shadow: 0 0 6px #fff;
+            transition: width 0.3s;
+        }
+
+        /* FILE SCROLL */
+        .file-scroll {
+            width: min(480px, 92vw);
+            height: 54px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .file-scroll::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 26px;
+            background: linear-gradient(transparent, #000);
+        }
+
+        .f-item {
+            font-size: 10px;
+            line-height: 1.9;
+            letter-spacing: 0.5px;
+            color: #333;
+        }
+
+        .f-item.enc { color: #777; }
+
+        /* DIVIDER */
+        .divider {
+            width: min(480px, 92vw);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ffffff15, transparent);
+        }
+
+        /* KEY SECTION */
+        .key-section {
+            width: min(480px, 92vw);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .key-label {
+            color: #666;
+            font-size: 9px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .contact-line {
+            color: #555;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .contact-line span { color: #ccc; }
+
+        .key-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        #keyInput {
+            flex: 1;
+            background: #080808;
+            border: 1px solid #ffffff18;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            letter-spacing: 3px;
+            padding: 10px 14px;
+            outline: none;
+            text-transform: uppercase;
+            transition: border-color 0.2s;
+        }
+
+        #keyInput::placeholder { color: #2a2a2a; }
+        #keyInput:focus { border-color: #ffffff44; }
+
+        #submitKey {
+            background: #fff;
+            border: none;
+            color: #000;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #submitKey:hover { background: #ccc; }
+
+        #keyResult {
+            font-size: 10px;
+            letter-spacing: 2px;
+            min-height: 16px;
+            display: none;
+        }
+
+        #keyResult.error   { color: #666; display: block; }
+        #keyResult.success { color: #fff; display: block; text-shadow: 0 0 8px #fff; }
+
+        /* STATS */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .s-item {
+            font-size: 9px;
+            color: #333;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border: 1px solid #ffffff0d;
+        }
+
+        .s-item b { color: #777; margin-left: 4px; }
+
+        /* UNLOCKED */
+        #unlockedScreen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 500;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        #unlockedScreen.show { display: flex; }
+
+        .unlock-icon {
+            font-size: 64px;
+            animation: imgPulse 2s infinite;
+        }
+
+        .unlock-title {
+            color: #fff;
+            font-size: clamp(16px, 4vw, 28px);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .unlock-sub {
+            color: #444;
+            font-size: 10px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+    <div class="scanlines"></div>
+    <div id="flash"></div>
+
+    <!-- ENTER PAGE -->
+    <div id="enterPage">
+        <div class="half-white">
+            <span>system</span>
+        </div>
+        <div class="half-black">
+            <button id="enterBtn" onclick="startAll()">masuk</button>
+        </div>
+    </div>
+
+    <!-- RANSOM UI -->
+    <div id="ransomUI">
+        <div class="corner c-tl"></div>
+        <div class="corner c-tr"></div>
+        <div class="corner c-bl"></div>
+        <div class="corner c-br"></div>
+        <div class="torch-dot off" id="torchDot"></div>
+
+        <img src="https://files.catbox.moe/j8jfme.png" class="skull-img" alt="">
+
+        <div class="r-title" data-text="YOUR FILES ARE ENCRYPTED">YOUR FILES ARE ENCRYPTED</div>
+        <div class="by-line">hack by <span>JundXsurcine 😈</span></div>
+
+        <div class="warn-box">
+            <div class="warn-header">
+                <span>⚠ critical warning</span>
+                <span id="clock">--:--:--</span>
+            </div>
+            <div class="warn-line hi">Semua file kamu telah dienkripsi.</div>
+            <div class="warn-line mid">Jangan matikan atau restart perangkat ini.</div>
+            <div class="warn-line mid">Jangan coba hapus atau pindah file apapun.</div>
+            <div class="warn-line lo">Victim ID: <b id="victimID">--</b></div>
+        </div>
+
+        <div class="cd-block">
+            <div class="cd-label">waktu tersisa sebelum file terhapus permanen</div>
+            <div class="cd-time" id="countdown">23:59:59</div>
+        </div>
+
+        <div class="prog-block">
+            <div class="prog-top">
+                <span>encrypting files</span>
+                <span id="pct">0%</span>
+            </div>
+            <div class="prog-track">
+                <div class="prog-fill" id="progFill"></div>
+            </div>
+        </div>
+
+        <div class="file-scroll" id="fileScroll"></div>
+
+        <div class="divider"></div>
+
+        <div class="key-section">
+            <div class="key-label">🔐 untuk mendapatkan key</div>
+            <div class="contact-line">hubungi: <span>+6283172741314</span></div>
+            <div class="key-row">
+                <input type="text" id="keyInput" placeholder="masukan key disini" maxlength="20">
+                <button id="submitKey" onclick="checkKey()">masuk</button>
+            </div>
+            <div id="keyResult"></div>
+        </div>
+
+        <div class="stats-row">
+            <div class="s-item">FILES<b id="fileCount">0</b></div>
+            <div class="s-item">SIZE<b id="sizeN">0 MB</b></div>
+            <div class="s-item">STATUS<b style="color:#fff">LOCKED</b></div>
+        </div>
+    </div>
+
+    <!-- UNLOCKED -->
+    <div id="unlockedScreen">
+        <div class="unlock-icon">🔓</div>
+        <div class="unlock-title">ACCESS GRANTED</div>
+        <div class="unlock-sub">key verified — system unlocked</div>
+    </div>
+
+    <audio id="audio" loop>
+        <source src="https://files.catbox.moe/kdpodj.mp3" type="audio/mpeg">
+    </audio>
+
+<script>
+// ===== MATRIX =====
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+const CHARS = '01アイウエカサタナハBCDEFGHIJKLMNOP';
+const drops = Array(Math.floor(canvas.width / 14)).fill(1);
+
+setInterval(() => {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = '13px Courier New';
+    for (let i = 0; i < drops.length; i++) {
+        ctx.fillText(CHARS[Math.floor(Math.random() * CHARS.length)], i * 14, drops[i] * 14);
+        if (drops[i] * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+    }
+}, 45);
+
+// ===== START ALL =====
+async function startAll() {
+    try { await document.documentElement.requestFullscreen(); } catch(e) {}
+
+    document.getElementById('enterPage').classList.add('hide');
+    setTimeout(() => {
+        document.getElementById('enterPage').style.display = 'none';
+        document.getElementById('ransomUI').classList.add('show');
+    }, 500);
+
+    const audio = document.getElementById('audio');
+    audio.volume = 0;
+    audio.play().then(() => fadeVolume(audio, 0, 0.85, 10000)).catch(() => {});
+
+    await initTorch();
+    startBlink();
+    startClock();
+    startCountdown();
+    startProgress();
+    startFiles();
+    genID();
+}
+
+// ===== FADE VOLUME =====
+function fadeVolume(audio, from, to, ms) {
+    const steps = 80;
+    const step = (to - from) / steps;
+    let v = from;
+    const iv = setInterval(() => {
+        v += step;
+        if (v >= to) { audio.volume = to; clearInterval(iv); }
+        else audio.volume = Math.min(v, 1);
+    }, ms / steps);
+}
+
+// ===== TORCH =====
+let torchTrack = null;
+let blinkState = false;
+
+async function initTorch() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: 'environment' } }
+        });
+        const track = stream.getVideoTracks()[0];
+        if (track.getCapabilities && track.getCapabilities().torch) {
+            torchTrack = track;
+        } else track.stop();
+    } catch(e) {}
+}
+
+function startBlink() { blinkCycle(); }
+
+function blinkCycle() {
+    blinkState = !blinkState;
+    applyFlash(blinkState);
+    setTimeout(blinkCycle, blinkState ? 550 : 450);
+}
+
+async function applyFlash(on) {
+    document.getElementById('flash').style.opacity = on ? '0.025' : '0';
+    const dot = document.getElementById('torchDot');
+    dot.classList.toggle('off', !on);
+    if (torchTrack) {
+        try { await torchTrack.applyConstraints({ advanced: [{ torch: on }] }); } catch(e) {}
+    }
+}
+
+// ===== CLOCK =====
+function startClock() {
+    setInterval(() => {
+        const n = new Date();
+        document.getElementById('clock').textContent =
+            [n.getHours(), n.getMinutes(), n.getSeconds()]
+            .map(x => String(x).padStart(2,'0')).join(':');
+    }, 1000);
+}
+
+// ===== COUNTDOWN =====
+function startCountdown() {
+    let t = 23 * 3600 + 59 * 59;
+    setInterval(() => {
+        if (t <= 0) return;
+        t--;
+        const h = Math.floor(t / 3600);
+        const m = Math.floor((t % 3600) / 60);
+        const s = t % 60;
+        document.getElementById('countdown').textContent =
+            [h, m, s].map(x => String(x).padStart(2,'0')).join(':');
+    }, 1000);
+}
+
+// ===== PROGRESS =====
+let pct = 0;
+function startProgress() {
+    const iv = setInterval(() => {
+        if (pct >= 100) { clearInterval(iv); return; }
+        pct += Math.random() * 0.35;
+        if (pct > 100) pct = 100;
+        document.getElementById('progFill').style.width = pct + '%';
+        document.getElementById('pct').textContent = Math.floor(pct) + '%';
+    }, 130);
+}
+
+// ===== FILES =====
+const FILES = [
+    'C:/Users/Documents/private_keys.dat',
+    'C:/Users/Pictures/photos_backup.zip',
+    'D:/Backup/database_2024.sql',
+    'C:/Users/Desktop/passwords.txt',
+    'D:/Work/project_final.docx',
+    'C:/Users/Downloads/wallet.dat',
+    'D:/Finance/rekening.xlsx',
+    'C:/Users/Documents/contracts.pdf',
+    'D:/Personal/ktp_scan.jpg',
+    'C:/AppData/chrome_data',
+    'D:/Backup/contacts.vcf',
+    'C:/ProgramData/ssh/id_rsa',
+];
+
+let fIdx = 0, fCount = 0, fSize = 0;
+
+function startFiles() {
+    setInterval(() => {
+        if (fIdx >= FILES.length) fIdx = 0;
+        fCount++;
+        fSize += Math.random() * 12 + 1;
+        document.getElementById('fileCount').textContent = fCount;
+        document.getElementById('sizeN').textContent = fSize.toFixed(1) + ' MB';
+
+        const el = document.createElement('div');
+        el.className = 'f-item enc';
+        el.textContent = '> ' + FILES[fIdx];
+        document.getElementById('fileScroll').appendChild(el);
+
+        const all = document.getElementById('fileScroll').querySelectorAll('.f-item');
+        if (all.length > 10) all[0].remove();
+        fIdx++;
+    }, 900);
+}
+
+// ===== VICTIM ID =====
+function genID() {
+    const c = 'ABCDEF0123456789';
+    let id = '';
+    for (let i = 0; i < 16; i++) {
+        if (i > 0 && i % 4 === 0) id += '-';
+        id += c[Math.floor(Math.random() * c.length)];
+    }
+    document.getElementById('victimID').textContent = id;
+}
+
+// ===== KEY CHECK =====
+function checkKey() {
+    const val = document.getElementById('keyInput').value.trim().toUpperCase();
+    const res = document.getElementById('keyResult');
+
+    if (val === 'JUNDXSURCINE') {
+        res.className = 'success';
+        res.textContent = '✓ key valid — decrypting...';
+        setTimeout(() => {
+            document.getElementById('ransomUI').style.display = 'none';
+            document.getElementById('unlockedScreen').classList.add('show');
+            if (torchTrack) { applyFlash(false); torchTrack.stop(); }
+        }, 1500);
+    } else {
+        res.className = 'error';
+        res.textContent = '✗ key salah — coba lagi';
+        document.getElementById('keyInput').value = '';
+        const inp = document.getElementById('keyInput');
+        let s = 0;
+        const sv = setInterval(() => {
+            inp.style.transform = s % 2 === 0 ? 'translateX(4px)' : 'translateX(-4px)';
+            s++;
+            if (s > 6) { inp.style.transform = 'none'; clearInterval(sv); }
+        }, 50);
+    }
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('ransomUI').classList.contains('show')) {
+        checkKey();
+    }
+});
+
+window.addEventListener('beforeunload', () => {
+    if (torchTrack) { applyFlash(false); torchTrack.stop(); }
+});
+</script>
+</body>
+</html>
+
+<!-- uploader by Laskar Group -->
